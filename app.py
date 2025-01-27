@@ -1,22 +1,9 @@
+
 from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-# Konfiguracja bazy danych SQLite
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-# Model użytkownika
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
-
-# Inicjalizacja bazy danych
-with app.app_context():
-    db.create_all()
+users = {}  # Prosta baza danych użytkowników (email -> hasło)
 
 @app.route('/')
 def home():
@@ -26,8 +13,7 @@ def home():
 def login():
     email = request.form['email']
     password = request.form['password']
-    user = User.query.filter_by(email=email, password=password).first()
-    if user:
+    if email in users and users[email] == password:
         return redirect(url_for('dashboard'))
     return "Nieprawidłowe dane logowania", 401
 
@@ -35,11 +21,9 @@ def login():
 def register():
     email = request.form['email']
     password = request.form['password']
-    if User.query.filter_by(email=email).first():
+    if email in users:
         return "Użytkownik już istnieje", 400
-    new_user = User(email=email, password=password)
-    db.session.add(new_user)
-    db.session.commit()
+    users[email] = password
     return redirect(url_for('home'))
 
 @app.route('/dashboard')
