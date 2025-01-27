@@ -1,127 +1,26 @@
-/* Ogólne ustawienia */
+
 body {
     font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
 }
-
-header {
-    background-color: #4CAF50;
+.header {
+    background-color: #0056b3;
     color: white;
+    padding: 10px 0;
     text-align: center;
-    padding: 1rem 0;
 }
-
-header .logo {
-    width: 100px;
-    display: block;
-    margin: 0 auto 10px;
-}
-
-header h1 {
-    font-size: 2rem;
-    margin: 0;
-}
-
-header p {
-    font-size: 1rem;
-    margin: 0;
-}
-
 .container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
 }
-
-.section {
-    margin-bottom: 20px;
-}
-
-.section h2 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #4CAF50;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-form input {
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 100%;
-}
-
-form button {
-    background-color: #4CAF50;
-    color: white;
-    font-size: 1rem;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-form button:hover {
-    background-color: #45a049;
-}
-
 footer {
-    background-color: #333;
-    color: white;
+    background: #333;
+    color: #fff;
     text-align: center;
     padding: 10px 0;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-}
-
-footer p {
-    margin: 0;
-    font-size: 0.9rem;
-}
-
-/* Flash messages */
-.flash-messages {
-    margin: 20px auto;
-    padding: 10px;
-    max-width: 600px;
-}
-
-.flash-message {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    text-align: center;
-}
-
-.flash-message.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.flash-message.warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
-}
-
-.flash-message.danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    margin-top: 20px;
 }
