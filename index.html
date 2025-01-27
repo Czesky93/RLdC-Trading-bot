@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLdC Trading Bot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            color: white;
+        }
+        header {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            text-align: center;
+        }
+        .logo {
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .container {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .button {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            color: white;
+            background-color: #FFA500;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #FF8C00;
+        }
+        footer {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="RLdC Logo" class="logo" width="100">
+        <h1>RLdC Trading Bot</h1>
+        <p>Automatyczne zarządzanie handlem kryptowalutami</p>
+    </header>
+    <div class="container">
+        <h2>Rejestracja</h2>
+        <form action="/register" method="POST">
+            <label for="email">E-mail:</label><br>
+            <input type="email" id="email" name="email" required><br>
+            <label for="password">Hasło:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <button type="submit" class="button">Zarejestruj się</button>
+        </form>
+
+        <h2>Logowanie</h2>
+        <form action="/login" method="POST">
+            <label for="login_email">E-mail:</label><br>
+            <input type="email" id="login_email" name="email" required><br>
+            <label for="login_password">Hasło:</label><br>
+            <input type="password" id="login_password" name="password" required><br><br>
+            <button type="submit" class="button">Zaloguj się</button>
+        </form>
+    </div>
+    <footer>
+        <p>© 2025 RLdC Rafael Lukas del Chesky</p>
+    </footer>
+</body>
+</html>
