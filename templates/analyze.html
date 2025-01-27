@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analiza Binance</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Analiza Binance</h1>
+    </header>
+    <main class="container">
+        <h2>Najlepsze pary handlowe</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Zmiana ceny (%)</th>
+                    <th>Wolumen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pair in results %}
+                <tr>
+                    <td>{{ pair.symbol }}</td>
+                    <td>{{ pair.price_change }}</td>
+                    <td>{{ pair.volume }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/">Powrót do strony głównej</a>
+    </main>
+</body>
+</html>
