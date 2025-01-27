@@ -1,49 +1,65 @@
 
-from flask import Flask, request, jsonify, render_template
-import os
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
 app = Flask(__name__)
+app.secret_key = 'secretkey123'
 
-users = {"admin": "password"}  # Simple user storage for testing
-logs = []  # Placeholder for logs
+# Placeholder for user database
+users = {"admin": "password"}  # Example user
 
-@app.route("/")
+@app.route('/')
 def home():
-    return render_template("index.html")
+    if 'user' in session:
+        return redirect(url_for('dashboard'))
+    return render_template('index.html')
 
-@app.route("/register", methods=["POST"])
-def register():
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
-    if username in users:
-        return jsonify({"status": "error", "message": "User already exists"})
-    users[username] = password
-    return jsonify({"status": "success", "message": "User registered successfully"})
-
-@app.route("/login", methods=["POST"])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
-    if users.get(username) == password:
-        return jsonify({"status": "success", "message": "Login successful"})
-    return jsonify({"status": "error", "message": "Invalid credentials"})
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username in users and users[username] == password:
+            session['user'] = username
+            return redirect(url_for('dashboard'))
+        return "Invalid credentials"
+    return render_template('login.html')
 
-@app.route("/connect_binance", methods=["POST"])
-def connect_binance():
-    data = request.json
-    api_key = data.get("api_key")
-    api_secret = data.get("api_secret")
-    if api_key and api_secret:
-        logs.append(f"Binance connected with API Key: {api_key}")
-        return jsonify({"status": "success", "message": "Binance connected"})
-    return jsonify({"status": "error", "message": "Missing Binance credentials"})
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username not in users:
+            users[username] = password
+            return redirect(url_for('login'))
+        return "User already exists"
+    return render_template('register.html')
 
-@app.route("/logs", methods=["GET"])
-def get_logs():
-    return jsonify({"status": "success", "logs": logs})
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('home'))
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+@app.route('/dashboard')
+def dashboard():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
+
+@app.route('/binance/disconnect', methods=['POST'])
+def disconnect_binance():
+    # Placeholder for disconnecting Binance
+    return jsonify({"status": "success", "message": "Binance disconnected successfully"})
+
+@app.route('/account/settings', methods=['GET', 'POST'])
+def account_settings():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        users[session['user']] = new_password
+        return jsonify({"status": "success", "message": "Password updated successfully"})
+    return render_template('settings.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
