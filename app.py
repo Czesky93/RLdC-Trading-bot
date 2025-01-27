@@ -1,45 +1,34 @@
 
-from flask import Flask, render_template_string
-import importlib
-import os
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
-MODULES_DIR = 'modules'
-
-def load_module(module_name):
-    try:
-        module = importlib.import_module(module_name)
-        return module
-    except ImportError as e:
-        print(f"Error loading module {module_name}: {e}")
-        return None
-
-def discover_modules():
-    return [d for d in os.listdir(MODULES_DIR) if os.path.isdir(os.path.join(MODULES_DIR, d))]
+users = {}  # Prosta baza danych użytkowników (email -> hasło)
 
 @app.route('/')
 def home():
-    # Dynamiczne generowanie strony głównej
-    modules = discover_modules()
-    html = '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Modular Bot</title>
-    </head>
-    <body>
-        <h1>Welcome to Modular Bot</h1>
-        <h2>Available Modules:</h2>
-        <ul>
-        {% for module in modules %}
-            <li>{{ module }}</li>
-        {% endfor %}
-        </ul>
-    </body>
-    </html>
-    '''
-    return render_template_string(html, modules=modules)
+    return render_template('index.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form['email']
+    password = request.form['password']
+    if email in users and users[email] == password:
+        return redirect(url_for('dashboard'))
+    return "Nieprawidłowe dane logowania", 401
+
+@app.route('/register', methods=['POST'])
+def register():
+    email = request.form['email']
+    password = request.form['password']
+    if email in users:
+        return "Użytkownik już istnieje", 400
+    users[email] = password
+    return redirect(url_for('home'))
+
+@app.route('/dashboard')
+def dashboard():
+    return "Panel użytkownika (w przygotowaniu)"
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000)
