@@ -1,19 +1,28 @@
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, render_template, jsonify
+import os
 
 app = Flask(__name__)
 
-@app.route('/')
+# Home route
+@app.route("/")
 def home():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/connect', methods=['POST'])
+# Connect Binance API
+@app.route("/connect", methods=["POST"])
 def connect():
-    api_key = request.form.get('api_key')
-    api_secret = request.form.get('api_secret')
-    if api_key and api_secret:
-        return jsonify({"status": "success", "message": "API connected"})
-    return jsonify({"status": "error", "message": "Missing API credentials"})
+    api_key = request.form.get("api_key")
+    secret_key = request.form.get("api_secret")
+    if not api_key or not secret_key:
+        return jsonify({"status": "error", "message": "API credentials are required"})
+    return jsonify({"status": "success", "message": "Connected successfully!"})
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Log Viewer (placeholder)
+@app.route("/logs", methods=["GET"])
+def logs():
+    return jsonify({"status": "success", "logs": ["Log 1", "Log 2", "Log 3"]})
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
