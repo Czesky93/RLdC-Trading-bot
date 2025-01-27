@@ -1,9 +1,9 @@
 
-from flask import Flask
+from flask import Flask, render_template_string
 import importlib
 import os
 
-app = Flask(__name__)  # Obiekt aplikacji Flask
+app = Flask(__name__)
 
 MODULES_DIR = 'modules'
 
@@ -18,17 +18,28 @@ def load_module(module_name):
 def discover_modules():
     return [d for d in os.listdir(MODULES_DIR) if os.path.isdir(os.path.join(MODULES_DIR, d))]
 
-@app.route('/')  # Trasa główna
+@app.route('/')
 def home():
-    return "Hello, World! Modules are loaded dynamically."
-
-def main():
-    print("Discovering modules...")
+    # Dynamiczne generowanie strony głównej
     modules = discover_modules()
-    for module in modules:
-        print(f"Loading module: {module}")
-        load_module(f"modules.{module}")
+    html = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Modular Bot</title>
+    </head>
+    <body>
+        <h1>Welcome to Modular Bot</h1>
+        <h2>Available Modules:</h2>
+        <ul>
+        {% for module in modules %}
+            <li>{{ module }}</li>
+        {% endfor %}
+        </ul>
+    </body>
+    </html>
+    '''
+    return render_template_string(html, modules=modules)
 
 if __name__ == "__main__":
-    main()
-    app.run(host='0.0.0.0', port=5000)  # Uruchomienie serwera Flask
+    app.run(host='0.0.0.0', port=5000)
