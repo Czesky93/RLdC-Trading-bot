@@ -4,10 +4,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import re
 
+# Konfiguracja aplikacji
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'default_secret_key')
 
-# Konfiguracja bazy danych (PostgreSQL dla Heroku lub SQLite lokalnie)
+# Konfiguracja bazy danych
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -22,21 +23,18 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
+# Walidacja e-maila
 def validate_email(email):
-    '''Walidacja formatu e-maila.'''
     regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     return re.match(regex, email)
 
+# Walidacja hasła
 def validate_password(password):
-    '''Walidacja długości hasła.'''
     return len(password) >= 6
 
 @app.route('/')
 def home():
-    # Dynamiczne ładowanie modułów z katalogu modules/
-    modules_dir = "modules"
-    modules = [d for d in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, d))]
-    return render_template('index.html', modules=modules)
+    return render_template('index.html')
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -68,6 +66,7 @@ def register():
     db.session.commit()
     flash("Rejestracja zakończona sukcesem!", "success")
     return redirect(url_for('home'))
+
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html', message="Witaj w panelu użytkownika!")
