@@ -1,5 +1,9 @@
+
+from flask import Flask
 import importlib
 import os
+
+app = Flask(__name__)  # Obiekt aplikacji Flask
 
 MODULES_DIR = 'modules'
 
@@ -14,6 +18,10 @@ def load_module(module_name):
 def discover_modules():
     return [d for d in os.listdir(MODULES_DIR) if os.path.isdir(os.path.join(MODULES_DIR, d))]
 
+@app.route('/')  # Trasa główna
+def home():
+    return "Hello, World! Modules are loaded dynamically."
+
 def main():
     print("Discovering modules...")
     modules = discover_modules()
@@ -23,3 +31,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    app.run(host='0.0.0.0', port=5000)  # Uruchomienie serwera Flask
