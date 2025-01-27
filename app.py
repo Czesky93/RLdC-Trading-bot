@@ -68,7 +68,6 @@ def register():
     db.session.commit()
     flash("Rejestracja zakończona sukcesem!", "success")
     return redirect(url_for('home'))
-
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html', message="Witaj w panelu użytkownika!")
