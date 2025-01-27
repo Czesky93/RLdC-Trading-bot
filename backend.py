@@ -1,18 +1,20 @@
 
-from flask import Flask, request, jsonify
-import os
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
 @app.route("/")
-def home():
-    return "Welcome to RLdC Trading Bot!"
+def index():
+    return render_template("index.html")
 
-@app.route("/status", methods=["GET"])
-def status():
-    return jsonify({"status": "Running", "message": "RLdC Trading Bot is online!"})
+@app.route("/settings", methods=["POST"])
+def settings():
+    api_key = request.form.get("apiKey")
+    secret_key = request.form.get("secretKey")
+    with open("user_settings.txt", "w") as file:
+        file.write(f"API Key: {api_key}\nSecret Key: {secret_key}")
+    return "Ustawienia zapisane pomyślnie!"
 
 if __name__ == "__main__":
-    # Heroku requires the app to bind to the $PORT environment variable
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
+    
