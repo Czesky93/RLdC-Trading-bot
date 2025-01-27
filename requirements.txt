@@ -1,4 +1,3 @@
 flask
 flask_sqlalchemy
 gunicorn
-sqlite3
