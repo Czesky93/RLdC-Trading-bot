@@ -1,58 +1,40 @@
-
-from flask import Flask, request, jsonify, render_template
-import sqlite3
+from flask import Flask, request, jsonify
+import os
 
 app = Flask(__name__)
-DATABASE = "database.sqlite"
 
-def get_db():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
+# Simple home route
+@app.route("/")
+def home():
+    return "Welcome to RLdC Trading Bot!"
 
-@app.route('/')
-def index():
-    return "RLdC Trading Bot is running!"
+# Status route for checking if the app is running
+@app.route("/status", methods=["GET"])
+def status():
+    return jsonify({"status": "Running", "message": "RLdC Trading Bot is online!"})
 
-@app.route('/register', methods=['POST'])
+# Example route for user registration (placeholder)
+@app.route("/register", methods=["POST"])
 def register():
-    email = request.form.get("email")
-    password = request.form.get("password")
-    conn = get_db()
-    try:
-        conn.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, password))
-        conn.commit()
-        return jsonify({"message": "Rejestracja zakończona sukcesem"}), 200
-    except sqlite3.IntegrityError:
-        return jsonify({"error": "Użytkownik już istnieje"}), 400
-    finally:
-        conn.close()
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+    if not email or not password:
+        return jsonify({"error": "Missing email or password"}), 400
+    return jsonify({"message": f"User {email} registered successfully!"}), 200
 
-@app.route('/login', methods=['POST'])
-def login():
-    email = request.form.get("email")
-    password = request.form.get("password")
-    conn = get_db()
-    user = conn.execute("SELECT * FROM users WHERE email = ? AND password = ?", (email, password)).fetchone()
-    conn.close()
-    if user:
-        return jsonify({"message": "Zalogowano pomyślnie"}), 200
-    return jsonify({"error": "Nieprawidłowe dane logowania"}), 400
-
-@app.route('/set_binance', methods=['POST'])
+# Example route for Binance API settings
+@app.route("/set_binance", methods=["POST"])
 def set_binance():
-    user_id = request.form.get("user_id")
-    api_key = request.form.get("api_key")
-    api_secret = request.form.get("api_secret")
-    max_amount = request.form.get("max_amount")
-    conn = get_db()
-    conn.execute(
-        "INSERT INTO binance_settings (user_id, api_key, api_secret, max_amount) VALUES (?, ?, ?, ?)",
-        (user_id, api_key, api_secret, max_amount)
-    )
-    conn.commit()
-    conn.close()
-    return jsonify({"message": "Ustawienia Binance zapisane"}), 200
+    data = request.get_json()
+    api_key = data.get("api_key")
+    api_secret = data.get("api_secret")
+    max_amount = data.get("max_amount")
+    if not api_key or not api_secret or not max_amount:
+        return jsonify({"error": "Missing Binance settings"}), 400
+    return jsonify({"message": "Binance settings saved successfully!"}), 200
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    # Heroku requires the app to bind to the $PORT environment variable
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
