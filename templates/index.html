@@ -1,47 +1,11 @@
+
 <!DOCTYPE html>
-<html lang="pl">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RLdC Trading Bot</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Trading Bot</title>
 </head>
 <body>
-    <header>
-        <img src="/static/logo.webp" alt="RLdC Logo" class="logo">
-        <h1>RLdC Trading Bot</h1>
-        <p>Automatyczne zarządzanie handlem kryptowalutami</p>
-    </header>
-    <div class="container">
-        <div class="section">
-            <h2>Logowanie</h2>
-            <form action="/login" method="post">
-                <input type="text" name="email" placeholder="Email" required>
-                <input type="password" name="password" placeholder="Hasło" required>
-                <button type="submit">Zaloguj</button>
-            </form>
-        </div>
-        <div class="section">
-            <h2>Rejestracja</h2>
-            <form action="/register" method="post">
-                <input type="text" name="email" placeholder="Email" required>
-                <input type="password" name="password" placeholder="Hasło" required>
-                <button type="submit">Zarejestruj</button>
-            </form>
-        </div>
-        <div class="section">
-            <h2>Analiza Binance</h2>
-            <p>Znajdź najlepsze pary handlowe, aby zmaksymalizować zyski!</p>
-            <button onclick="window.location.href='/analyze'">Rozpocznij analizę</button>
-        </div>
-        <div class="section">
-            <h2>Szybki start</h2>
-            <p>1. Wprowadź swoje klucze API Binance.<br>2. Wybierz strategię handlową.<br>3. Rozpocznij automatyczny handel i pozwól botowi zrobić resztę!</p>
-            <button onclick="window.location.href='/dashboard'">Rozpocznij</button>
-        </div>
-    </div>
-    <footer>
-        <p>© 2025 RLdC Rafael Lukas del Chesky - czesky93</p>
-    </footer>
+    <h1>Welcome to the Trading Bot</h1>
+    <a href="/dashboard">Dashboard</a> | <a href="/settings">Settings</a>
 </body>
 </html>
