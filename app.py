@@ -89,3 +89,9 @@ def page_not_found(e):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+@app.route('/analyze')
+def analyze():
+    from modules.analysis import analyze_binance_data
+    results = analyze_binance_data()
+    return render_template('analyze.html', results=results)
