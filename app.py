@@ -1,59 +1,53 @@
-
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from flask_sqlalchemy import SQLAlchemy
-import datetime
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+from binance.client import Client
+import os
 
 app = Flask(__name__)
-app.secret_key = "super_secret_key"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///trading_bot.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy(app)
+# Placeholder na dane użytkowników
+USER_KEYS = {}
 
-# Database models
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-
-class Log(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    action = db.Column(db.String(200), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-
-# Routes
-@app.route("/")
+# Strona główna
+@app.route('/')
 def home():
-    return render_template("index.html")
+    return render_template('index.html')
 
-@app.route("/dashboard")
-def dashboard():
-    logs = Log.query.order_by(Log.timestamp.desc()).all()
-    return render_template("dashboard.html", logs=logs)
+# Formularz wprowadzania kluczy API
+@app.route('/add_keys', methods=['POST'])
+def add_keys():
+    username = request.form.get('username')
+    api_key = request.form.get('api_key')
+    api_secret = request.form.get('api_secret')
 
-@app.route("/settings", methods=["GET", "POST"])
-def settings():
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-        user = User.query.filter_by(email=email).first()
-        if user:
-            flash("User already exists!", "warning")
-        else:
-            new_user = User(email=email, password=password)
-            db.session.add(new_user)
-            db.session.commit()
-            flash("User registered successfully!", "success")
-        return redirect(url_for("settings"))
-    return render_template("settings.html")
+    if username and api_key and api_secret:
+        USER_KEYS[username] = {'api_key': api_key, 'api_secret': api_secret}
+        return redirect(url_for('dashboard', username=username))
+    
+    return redirect(url_for('home'))
 
-@app.route("/api/analyze", methods=["POST"])
-def analyze():
-    data = request.json
-    result = {"status": "success", "recommendation": "buy", "confidence": 0.87}
-    return jsonify(result)
+# Dashboard użytkownika
+@app.route('/dashboard/<username>')
+def dashboard(username):
+    if username not in USER_KEYS:
+        return redirect(url_for('home'))
+    
+    return render_template('dashboard.html', username=username)
 
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+# Pobieranie cen dla użytkownika
+@app.route('/analyze/<username>')
+def analyze(username):
+    if username not in USER_KEYS:
+        return jsonify({'error': 'User not found'}), 404
+
+    api_key = USER_KEYS[username]['api_key']
+    api_secret = USER_KEYS[username]['api_secret']
+    client = Client(api_key, api_secret)
+
+    try:
+        prices = client.get_all_tickers()
+        return jsonify(prices)
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+if __name__ == '__main__':
     app.run(debug=True)
