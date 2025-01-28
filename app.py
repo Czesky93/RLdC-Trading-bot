@@ -3,11 +3,12 @@ from binance.client import Client
 import os
 import pandas as pd
 import ta
+import threading
 
 app = Flask(__name__)
 
-# Placeholder na dane użytkowników
 USER_KEYS = {}
+BEST_PAIRS_CACHE = []  # Przechowywanie najlepszych par do szybkiego dostępu
 
 def analyze_market_data(client, pair, interval='1m', limit=100):
     klines = client.get_klines(symbol=pair, interval=interval, limit=limit)
@@ -20,7 +21,8 @@ def analyze_market_data(client, pair, interval='1m', limit=100):
     data['RSI'] = ta.momentum.rsi(data['close'], window=14)
     return data[['close_time', 'close', 'RSI']]
 
-def analyze_all_pairs(client, interval='1m', limit=100):
+def fetch_best_pairs(client, interval='1m', limit=100):
+    global BEST_PAIRS_CACHE
     all_tickers = client.get_ticker()
     best_pairs = []
 
@@ -36,8 +38,9 @@ def analyze_all_pairs(client, interval='1m', limit=100):
                 best_pairs.append({'pair': pair, 'rsi': rsi, 'signal': 'sell'})
         except Exception:
             continue
+
     best_pairs.sort(key=lambda x: x['rsi'])
-    return best_pairs[:10]
+    BEST_PAIRS_CACHE = best_pairs[:10]
 
 @app.route('/')
 def home():
@@ -64,15 +67,7 @@ def dashboard(username):
 def best_pairs(username):
     if username not in USER_KEYS:
         return jsonify({'error': 'User not found'}), 404
-
-    api_key = USER_KEYS[username]['api_key']
-    api_secret = USER_KEYS[username]['api_secret']
-    client = Client(api_key, api_secret)
-    try:
-        best_pairs = analyze_all_pairs(client)
-        return jsonify(best_pairs)
-    except Exception as e:
-        return jsonify({'error': str(e)})
+    return jsonify(BEST_PAIRS_CACHE)
 
 @app.route('/analyze/<username>', methods=['POST'])
 def analyze(username):
@@ -82,24 +77,31 @@ def analyze(username):
     api_key = USER_KEYS[username]['api_key']
     api_secret = USER_KEYS[username]['api_secret']
     client = Client(api_key, api_secret)
-    try:
-        data = request.get_json()
-        pairs = data.get('pairs', [])
-        results = []
+    data = request.get_json()
+    pairs = data.get('pairs', [])
+    results = []
 
-        for pair in pairs:
-            market_data = analyze_market_data(client, pair)
-            latest = market_data.iloc[-1]
-            results.append({
-                'pair': pair,
-                'close_time': str(latest['close_time']),
-                'close': latest['close'],
-                'signal': 'buy' if latest['RSI'] < 30 else 'sell' if latest['RSI'] > 70 else 'hold'
-            })
-        return jsonify(results)
-    except Exception as e:
-        return jsonify({'error': str(e)})
+    for pair in pairs:
+        market_data = analyze_market_data(client, pair)
+        latest = market_data.iloc[-1]
+        results.append({
+            'pair': pair,
+            'close_time': str(latest['close_time']),
+            'close': latest['close'],
+            'signal': 'buy' if latest['RSI'] < 30 else 'sell' if latest['RSI'] > 70 else 'hold'
+        })
+    return jsonify(results)
 
 if __name__ == '__main__':
+    # Uruchomienie wątku do analizy najlepszych par co 60 sekund
+    def update_best_pairs():
+        while True:
+            for user in USER_KEYS.values():
+                client = Client(user['api_key'], user['api_secret'])
+                fetch_best_pairs(client)
+            time.sleep(60)
+
+    threading.Thread(target=update_best_pairs, daemon=True).start()
+
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
