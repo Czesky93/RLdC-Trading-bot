@@ -13,18 +13,8 @@ header {
     color: white;
 }
 
-header h1 {
-    margin: 0;
-}
-
-nav ul {
-    list-style: none;
-    padding: 0;
-}
-
-nav ul li {
-    display: inline;
-    margin: 0 10px;
+header img {
+    max-width: 150px;
 }
 
 main {
