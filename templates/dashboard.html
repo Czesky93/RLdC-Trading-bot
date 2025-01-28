@@ -16,8 +16,53 @@
         </nav>
     </header>
     <main>
-        <h2>Welcome, {{ username }}</h2>
-        <p>Your personalized cryptocurrency analysis is ready.</p>
+        <section id="best-pairs">
+            <h2>Best Trading Pairs</h2>
+            <form id="best-pairs-form">
+                <label for="pairs">System's Recommendation:</label>
+                <select id="recommended-pairs" name="pairs" multiple></select>
+                <label for="custom-pairs">Or Enter Your Own Pairs (comma-separated):</label>
+                <input type="text" id="custom-pairs" name="custom-pairs" placeholder="BTCUSDT,ETHUSDT">
+                <button type="submit">Analyze</button>
+            </form>
+        </section>
+        <section id="analysis">
+            <h2>Analysis Results</h2>
+            <div id="results"></div>
+        </section>
+        <script>
+            fetch('/best_pairs/{{ username }}')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('recommended-pairs');
+                    data.forEach(pair => {
+                        const option = document.createElement('option');
+                        option.value = pair.pair;
+                        option.textContent = `${pair.pair} (RSI: ${pair.rsi.toFixed(2)}) - Signal: ${pair.signal}`;
+                        select.appendChild(option);
+                    });
+                });
+
+            document.getElementById('best-pairs-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const selectedPairs = Array.from(document.getElementById('recommended-pairs').selectedOptions).map(option => option.value);
+                const customPairs = document.getElementById('custom-pairs').value.split(',').map(pair => pair.trim());
+                const pairs = [...selectedPairs, ...customPairs];
+                const response = await fetch('/analyze/{{ username }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pairs })
+                });
+                const data = await response.json();
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+                data.forEach(result => {
+                    const p = document.createElement('p');
+                    p.textContent = `Pair: ${result.pair}, Time: ${result.close_time}, Close: ${result.close}, Signal: ${result.signal}`;
+                    resultsDiv.appendChild(p);
+                });
+            });
+        </script>
     </main>
 </body>
 </html>
