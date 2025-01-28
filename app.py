@@ -4,11 +4,13 @@ import os
 import pandas as pd
 import ta
 import threading
+import time
 
 app = Flask(__name__)
 
 USER_KEYS = {}
-BEST_PAIRS_CACHE = []  # Przechowywanie najlepszych par do szybkiego dostępu
+BEST_PAIRS_CACHE = []
+USER_TRANSACTIONS = {}
 
 def analyze_market_data(client, pair, interval='1m', limit=100):
     klines = client.get_klines(symbol=pair, interval=interval, limit=limit)
@@ -42,6 +44,9 @@ def fetch_best_pairs(client, interval='1m', limit=100):
     best_pairs.sort(key=lambda x: x['rsi'])
     BEST_PAIRS_CACHE = best_pairs[:10]
 
+def fetch_user_transactions(client, username):
+    USER_TRANSACTIONS[username] = client.get_account()
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -54,6 +59,8 @@ def add_keys():
 
     if username and api_key and api_secret:
         USER_KEYS[username] = {'api_key': api_key, 'api_secret': api_secret}
+        client = Client(api_key, api_secret)
+        fetch_user_transactions(client, username)  # Pobieranie historii transakcji
         return redirect(url_for('dashboard', username=username))
     return redirect(url_for('home'))
 
@@ -61,13 +68,19 @@ def add_keys():
 def dashboard(username):
     if username not in USER_KEYS:
         return redirect(url_for('home'))
-    return render_template('dashboard.html', username=username)
+    return render_template('dashboard.html', username=username, logo='/static/images/logo.webp')
 
 @app.route('/best_pairs/<username>')
 def best_pairs(username):
     if username not in USER_KEYS:
         return jsonify({'error': 'User not found'}), 404
     return jsonify(BEST_PAIRS_CACHE)
+
+@app.route('/transactions/<username>')
+def transactions(username):
+    if username not in USER_TRANSACTIONS:
+        return jsonify({'error': 'No transactions found'})
+    return jsonify(USER_TRANSACTIONS[username])
 
 @app.route('/analyze/<username>', methods=['POST'])
 def analyze(username):
@@ -93,12 +106,12 @@ def analyze(username):
     return jsonify(results)
 
 if __name__ == '__main__':
-    # Uruchomienie wątku do analizy najlepszych par co 60 sekund
     def update_best_pairs():
         while True:
             for user in USER_KEYS.values():
                 client = Client(user['api_key'], user['api_secret'])
                 fetch_best_pairs(client)
+                fetch_user_transactions(client, user)  # Pobieranie transakcji uÅ¼ytkownika
             time.sleep(60)
 
     threading.Thread(target=update_best_pairs, daemon=True).start()
