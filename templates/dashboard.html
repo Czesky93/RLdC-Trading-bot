@@ -1,15 +1,23 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - RLdC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>Dashboard</h1>
-    <ul>
-        {% for log in logs %}
-        <li>{{ log.timestamp }} - {{ log.action }}</li>
-        {% endfor %}
-    </ul>
+    <header>
+        <h1>Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Welcome, {{ username }}</h2>
+        <p>Your personalized cryptocurrency analysis is ready.</p>
+    </main>
 </body>
 </html>
