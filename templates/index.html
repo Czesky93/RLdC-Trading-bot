@@ -1,42 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RLdC - Rafael Lukas del Chesky</title>
+    <title>RLdC Trading Bot</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header>
-        <h1>RLdC - Rafael Lukas del Chesky</h1>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="/dashboard">App</a></li>
-            </ul>
-        </nav>
+        <h1>Witamy w RLdC Trading Bot</h1>
     </header>
     <main>
-        <section id="about">
-            <h2>About Our Project</h2>
-            <p>Welcome to the RLdC cryptocurrency analysis platform. This platform helps you analyze and predict the best trading opportunities in real-time.</p>
-        </section>
-        <section id="app">
-            <h2>Get Started</h2>
-            <form action="/add_keys" method="post">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-                <label for="api_key">API Key:</label>
-                <input type="text" id="api_key" name="api_key" required>
-                <label for="api_secret">API Secret:</label>
-                <input type="password" id="api_secret" name="api_secret" required>
-                <button type="submit">Submit</button>
-            </form>
-        </section>
+        <form action="/zaloguj" method="POST">
+            <label for="username">Nazwa użytkownika:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="api_key">API Key:</label>
+            <input type="text" id="api_key" name="api_key" required>
+            <label for="api_secret">API Secret:</label>
+            <input type="password" id="api_secret" name="api_secret" required>
+            <button type="submit">Zaloguj</button>
+        </form>
     </main>
-    <footer>
-        <p>RLdC - Rafael Lukas del Chesky &copy; 2025</p>
-    </footer>
 </body>
 </html>
