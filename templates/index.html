@@ -20,6 +20,31 @@
             <input type="password" id="api_secret" name="api_secret" required>
             <button type="submit">Zaloguj</button>
         </form>
+
+        <section id="report">
+            <h2>Generuj Raport</h2>
+            <button id="generate-report">Pobierz Raport PDF</button>
+        </section>
+
+        <section id="dashboard">
+            <h2>Dashboard</h2>
+            <div id="dashboard-data"></div>
+        </section>
+
+        <script>
+            // Generowanie raportu
+            document.getElementById('generate-report').addEventListener('click', () => {
+                window.location.href = '/generate_report';
+            });
+
+            // Pobieranie dynamicznych danych do dashboardu
+            fetch('/dynamic_dashboard_data')
+                .then(response => response.json())
+                .then(data => {
+                    const dashboardDiv = document.getElementById('dashboard-data');
+                    dashboardDiv.innerHTML = JSON.stringify(data, null, 2);
+                });
+        </script>
     </main>
 </body>
 </html>
