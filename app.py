@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, session
 from auth.security import register_user, login_user, db
 from auth.oauth import google_login, authorize
-from auth.2fa import generate_2fa, verify_2fa
+from auth.two_fa import generate_2fa, verify_2fa
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@localhost/dbname'
