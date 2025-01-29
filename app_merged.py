@@ -8,11 +8,10 @@ from fpdf import FPDF
 app = Flask(__name__)
 app.secret_key = 'tajny_klucz'  # Klucz sesji
 
-REPORTS_DIR = 'reports'
-os.makedirs(REPORTS_DIR, exist_ok=True)  # Upewnij się, że katalog raportów istnieje
+LOG_DIR = 'logs'
+os.makedirs(LOG_DIR, exist_ok=True)
 
 def generate_report(username, portfolio_data, strategy_performance):
-    report_file = os.path.join(REPORTS_DIR, f'{username}_report.pdf')
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
