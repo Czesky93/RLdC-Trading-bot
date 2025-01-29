@@ -1,0 +1,1 @@
+console.log('RLdC Analyzer Loaded');
