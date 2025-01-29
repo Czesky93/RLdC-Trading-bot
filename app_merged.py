@@ -1,3 +1,13 @@
+
+# RLdC Trading Bot - Główna aplikacja Flask
+# Wykonane poprawki:
+# - Poprawiono system sesji użytkownika
+# - Dodano obsługę generowania raportów PDF
+# - Usunięto zbędne testowe pliki
+# - Poprawiono integrację z Binance API
+# Planowane:
+# - Dodać wsparcie dla AI i nowych strategii
+# - Ulepszyć obsługę błędów i logowania
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file
 from binance.client import Client
 import os

@@ -1,3 +1,12 @@
+
+# RLdC Trading Bot - Moduł analizy rynku
+# Wykonane poprawki:
+# - Optymalizacja pobierania danych z Binance API
+# - Dodanie obsługi różnych interwałów czasowych
+# - Zmiany w zarządzaniu sesją użytkownika
+# Planowane:
+# - Rozbudowa wskaźników technicznych
+# - Integracja z zewnętrznymi danymi rynkowymi
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import pandas as pd
 from binance.client import Client
