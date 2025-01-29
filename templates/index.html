@@ -7,44 +7,50 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+
     <header>
         <h1>Witamy w RLdC Trading Bot</h1>
     </header>
-    <main>
+
+    <div class="container">
         <form action="/zaloguj" method="POST">
             <label for="username">Nazwa użytkownika:</label>
             <input type="text" id="username" name="username" required>
+            
             <label for="api_key">API Key:</label>
             <input type="text" id="api_key" name="api_key" required>
+            
             <label for="api_secret">API Secret:</label>
             <input type="password" id="api_secret" name="api_secret" required>
-            <button type="submit">Zaloguj</button>
+            
+            <button type="submit" class="button">Zaloguj</button>
         </form>
 
         <section id="report">
             <h2>Generuj Raport</h2>
-            <button id="generate-report">Pobierz Raport PDF</button>
+            <button id="generate-report" class="button">Pobierz Raport PDF</button>
         </section>
 
         <section id="dashboard">
             <h2>Dashboard</h2>
             <div id="dashboard-data"></div>
         </section>
+    </div>
 
-        <script>
-            // Generowanie raportu
-            document.getElementById('generate-report').addEventListener('click', () => {
-                window.location.href = '/generate_report';
+    <script>
+        // Generowanie raportu
+        document.getElementById('generate-report').addEventListener('click', () => {
+            window.location.href = '/generate_report';
+        });
+
+        // Pobieranie dynamicznych danych do dashboardu
+        fetch('/dynamic_dashboard_data')
+            .then(response => response.json())
+            .then(data => {
+                const dashboardDiv = document.getElementById('dashboard-data');
+                dashboardDiv.innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
             });
+    </script>
 
-            // Pobieranie dynamicznych danych do dashboardu
-            fetch('/dynamic_dashboard_data')
-                .then(response => response.json())
-                .then(data => {
-                    const dashboardDiv = document.getElementById('dashboard-data');
-                    dashboardDiv.innerHTML = JSON.stringify(data, null, 2);
-                });
-        </script>
-    </main>
 </body>
 </html>
