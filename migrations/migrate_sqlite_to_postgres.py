@@ -7,17 +7,30 @@ postgres_user = "user"
 postgres_password = "password"
 postgres_host = "localhost"
 
-sqlite_conn = sqlite3.connect(sqlite_db)
-pg_conn = psycopg2.connect(dbname=postgres_db, user=postgres_user, password=postgres_password, host=postgres_host)
+try:
+    sqlite_conn = sqlite3.connect(sqlite_db)
+    pg_conn = psycopg2.connect(dbname=postgres_db, user=postgres_user, password=postgres_password, host=postgres_host)
 
-sqlite_cursor = sqlite_conn.cursor()
-pg_cursor = pg_conn.cursor()
+    sqlite_cursor = sqlite_conn.cursor()
+    pg_cursor = pg_conn.cursor()
 
-# Przykładowa migracja tabeli users
-sqlite_cursor.execute("SELECT id, username, email FROM users")
-users = sqlite_cursor.fetchall()
-pg_cursor.executemany("INSERT INTO users (id, username, email) VALUES (%s, %s, %s)", users)
+    tables = ["users", "trades"]
 
-pg_conn.commit()
-sqlite_conn.close()
-pg_conn.close()
+    for table in tables:
+        sqlite_cursor.execute(f"SELECT * FROM {table}")
+        columns = [desc[0] for desc in sqlite_cursor.description]
+        rows = sqlite_cursor.fetchall()
+
+        placeholders = ", ".join(["%s"] * len(columns))
+        columns_str = ", ".join(columns)
+        insert_query = f"INSERT INTO {table} ({columns_str}) VALUES ({placeholders})"
+
+        pg_cursor.executemany(insert_query, rows)
+        print(f"Migrated {len(rows)} records from {table}")
+
+    pg_conn.commit()
+except Exception as e:
+    print(f"Migration error: {e}")
+finally:
+    sqlite_conn.close()
+    pg_conn.close()
