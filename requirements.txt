@@ -4,3 +4,9 @@ bcrypt
 authlib
 pyotp
 gunicorn
+
+python-dotenv
+requests
+PyPDF2
+flask-session
+pytest
