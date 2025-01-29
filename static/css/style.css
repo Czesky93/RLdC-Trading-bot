@@ -1,1 +1,86 @@
-body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; }
+
+/* RLdC Trading Bot - Poprawiona wersja stylów */
+/* Przywrócono tło oraz półprzezroczyste kontenery */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('../images/background.jpg'); /* Przywrócone tło */
+    background-size: cover;
+    background-attachment: fixed;
+    color: white;
+}
+
+header {
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 1rem;
+    text-align: center;
+}
+
+.container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: rgba(0, 0, 0, 0.7); /* Przywrócona przezroczystość */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.button {
+    display: inline-block;
+    margin: 10px 0;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    color: white;
+    background-color: #FFA500; /* Pomarańczowy przycisk */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.button:hover {
+    background-color: #FF8C00;
+}
+
+/* Stylowanie dashboardu */
+#dashboard {
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+/* Formularz logowania */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    margin: auto;
+}
+
+input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 10px;
+    font-size: 1rem;
+    background-color: #FF8C00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #E07B00;
+}
