@@ -1,0 +1,32 @@
+### RLdC Analyzer - Historia zmian
+
+Opis projektu:
+RLdC Analyzer to aplikacja do analizy technicznej rynku kryptowalut, generowania sygnałów tradingowych i zarządzania transakcjami z Binance API.
+
+#### Wykonane:
+- Odtworzenie struktury projektu po resecie.
+- Dodanie obsługi bazy danych SQLite.
+- Integracja z Binance API.
+- Implementacja sygnałów RSI.
+- Wdrożenie strategii tradingowych.
+- Panel administratora do restartowania aplikacji, edycji konfiguracji i podglądu logów.
+
+#### Planowane:
+- Rozbudowa interfejsu użytkownika.
+- Dodatkowe wskaźniki techniczne (MACD, Ichimoku).
+- Lepsza integracja z TradingView.
+- Powiadomienia Telegram.
+
+#### Instrukcje na przyszłość:
+- Po każdej edycji `requirements.txt` uruchomić:
+  ```sh
+  heroku run pip install -r requirements.txt
+  ```
+- Po każdej zmianie kodu restartować aplikację:
+  ```sh
+  heroku restart
+  ```
+- Regularnie sprawdzać logi:
+  ```sh
+  heroku logs --tail
+  ```
