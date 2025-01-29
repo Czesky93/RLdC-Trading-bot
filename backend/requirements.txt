@@ -3,3 +3,4 @@ binance
 numpy
 TA-Lib
 sqlite3
+matplotlib
