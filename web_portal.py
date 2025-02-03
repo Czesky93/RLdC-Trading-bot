@@ -1,59 +1,35 @@
-import os
-import json
-import pandas as pd
-import matplotlib.pyplot as plt
 from flask import Flask, render_template, request, jsonify
-
-CONFIG_FILE = "config.json"
-
-if not os.path.exists(CONFIG_FILE):
-    print("🚨 Brak pliku config.json! Tworzenie domyślnej konfiguracji...")
-    default_config = {
-        "AI_MODE": "hybrid",
-        "USE_FREE_AI": True,
-        "USE_PAID_AI": False,
-        "START_BALANCE": 1000,
-        "STOP_LOSS": 0.02,
-        "TAKE_PROFIT": 0.05
-    }
-    with open(CONFIG_FILE, "w") as f:
-        json.dump(default_config, f, indent=4)
-
-with open(CONFIG_FILE) as config_file:
-    config = json.load(config_file)
+import json
+import os
+import requests
 
 app = Flask(__name__)
 
+CONFIG_FILE = "config.json"
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r") as file:
+            return json.load(file)
+    return {}
+
 @app.route("/")
-def index():
-    """Główna strona zaawansowanego portalu"""
-    return render_template("futuristic_dashboard.html", config=config)
+def home():
+    config = load_config()
+    return render_template("dashboard.html", config=config)
 
-@app.route("/update_config", methods=["POST"])
-def update_config():
-    """Aktualizacja ustawień bota"""
-    data = request.get_json()
-    config.update(data)
-    with open(CONFIG_FILE, "w") as f:
-        json.dump(config, f, indent=4)
-    return jsonify({"message": "✅ Konfiguracja zaktualizowana!"})
+@app.route("/settings", methods=["POST"])
+def update_settings():
+    new_config = request.json
+    with open(CONFIG_FILE, "w") as file:
+        json.dump(new_config, file, indent=4)
+    return jsonify({"status": "success", "message": "Ustawienia zapisane!"})
 
-@app.route("/get_trading_chart")
-def get_trading_chart():
-    """Generowanie wykresu strategii handlowych"""
-    data_file = "market_data_BTCUSDT.csv"
-    if not os.path.exists(data_file):
-        return jsonify({"error": "Brak danych rynkowych!"})
-
-    df = pd.read_csv(data_file)
-    plt.figure(figsize=(12, 6))
-    plt.plot(df["timestamp"], df["close"], label="Cena BTC", color="cyan")
-    plt.xlabel("Czas")
-    plt.ylabel("Cena (USDT)")
-    plt.grid(True, linestyle="--", color="gray")
-    plt.legend()
-    plt.savefig("static/futuristic_trading_chart.png")
-    return jsonify({"message": "✅ Wykres zaktualizowany!"})
+@app.route("/market_analysis", methods=["GET"])
+def market_analysis():
+    response = requests.get("https://api.binance.com/api/v3/ticker/price")
+    market_data = response.json()
+    return jsonify(market_data)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5004)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
