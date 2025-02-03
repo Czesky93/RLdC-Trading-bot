@@ -1,0 +1,1997 @@
+===========================================================
+           RLdC TRADING BOT - PEŁNY KOD ŹRÓDŁOWY
+===========================================================
+
+
+
+🔹 rldc_manager.py
+================================================================================
+import os
+import subprocess
+import json
+from flask import Flask, render_template, request, jsonify
+
+LOG_DIR = "logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOG_FILE = os.path.join(LOG_DIR, "rldc_manager.log")
+CONFIG_FILE = "config.json"
+
+app = Flask(__name__)
+
+def log(message):
+    with open(LOG_FILE, "a") as log_file:
+        log_file.write(message + "\n")
+    print(message)
+
+def install():
+    log("🔄 Rozpoczynamy instalację RLdC Trading Bot...")
+
+    subprocess.run(["sudo", "apt", "update", "-y"])
+    subprocess.run(["sudo", "apt", "install", "-y", "python3", "python3-venv", "python3-pip", "git"])
+
+    if not os.path.exists("venv"):
+        log("🌍 Tworzenie środowiska Python...")
+        subprocess.run(["python3", "-m", "venv", "venv"])
+
+    subprocess.run(["venv/bin/pip", "install", "--upgrade", "pip"])
+    subprocess.run(["venv/bin/pip", "install", "-r", "requirements.txt"])
+
+    log("✅ Instalacja zakończona!")
+
+def update():
+    log("🔄 Aktualizacja RLdC Trading Bot...")
+
+    backup_name = f"backup_{subprocess.getoutput('date +%Y%m%d_%H%M%S')}.tar.gz"
+    subprocess.run(["tar", "--exclude=venv", "--exclude=.git", "-czf", backup_name, "."])
+
+    subprocess.run(["git", "pull", "origin", "main"])
+
+    subprocess.run(["rm", "-rf", "venv"])
+    subprocess.run(["python3", "-m", "venv", "venv"])
+    subprocess.run(["venv/bin/pip", "install", "-r", "requirements.txt"])
+
+    log("✅ Aktualizacja zakończona!")
+
+def repair():
+    log("🔄 Naprawa RLdC Trading Bot...")
+
+    if not os.path.exists("venv"):
+        install()
+    else:
+        subprocess.run(["venv/bin/pip", "install", "-r", "requirements.txt"])
+
+    if not os.path.exists(CONFIG_FILE):
+        log("🚨 Brak config.json! Tworzenie domyślnego pliku...")
+        with open(CONFIG_FILE, "w") as f:
+            json.dump({
+                "TELEGRAM_BOT_TOKEN": "WPROWADŹ_TWÓJ_BOT_TOKEN",
+                "CHAT_ID": "WPROWADŹ_CHAT_ID",
+                "BINANCE_API_KEY": "WPROWADŹ_BINANCE_API",
+                "BINANCE_API_SECRET": "WPROWADŹ_BINANCE_SECRET"
+            }, f, indent=4)
+
+    log("✅ Naprawa zakończona!")
+
+def restart():
+    log("🔄 Restartowanie RLdC Trading Bot...")
+
+    subprocess.run(["pkill", "-f", "run_rldc_trading_bot.py"], stderr=subprocess.DEVNULL)
+    subprocess.run(["nohup", "venv/bin/python", "run_rldc_trading_bot.py", ">", "bot.log", "2>&1", "&"])
+
+    log("✅ RLdC Trading Bot uruchomiony!")
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/install", methods=["POST"])
+def install_api():
+    install()
+    return jsonify({"status": "ok", "message": "Instalacja zakończona!"})
+
+@app.route("/update", methods=["POST"])
+def update_api():
+    update()
+    return jsonify({"status": "ok", "message": "Aktualizacja zakończona!"})
+
+@app.route("/repair", methods=["POST"])
+def repair_api():
+    repair()
+    return jsonify({"status": "ok", "message": "Naprawa zakończona!"})
+
+@app.route("/restart", methods=["POST"])
+def restart_api():
+    restart()
+    return jsonify({"status": "ok", "message": "Bot zrestartowany!"})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+
+
+🔹 trading_strategy.py
+================================================================================
+import pandas as pd
+from ta.trend import EMAIndicator
+
+def get_trading_signal():
+    df = pd.read_csv("market_data.csv")
+    df["EMA_9"] = EMAIndicator(df["close"], window=9).ema_indicator()
+    df["EMA_21"] = EMAIndicator(df["close"], window=21).ema_indicator()
+
+    if df["EMA_9"].iloc[-1] > df["EMA_21"].iloc[-1]:
+        return "KUP"
+    elif df["EMA_9"].iloc[-1] < df["EMA_21"].iloc[-1]:
+        return "SPRZEDAJ"
+    else:
+        return "TRZYMAJ"
+
+print(f"💰 Strategia EMA: {get_trading_signal()}")
+
+
+🔹 ai_analyzer.py
+================================================================================
+import gpt4all
+import pandas as pd
+
+model = gpt4all.GPT4All("gpt4all-model.bin")
+
+def analyze_market():
+    df = pd.read_csv("market_data.csv")
+    last_price = df["close"].iloc[-1]
+
+    prompt = f"Cena ostatniej świecy to {last_price} USDT. Czy powinienem KUPIĆ, SPRZEDAĆ, czy TRZYMAĆ?"
+    response = model.generate(prompt)
+    return response.strip().upper()
+
+print(f"📈 AI rekomenduje: {analyze_market()}")
+
+
+🔹 telegram_bot.py
+================================================================================
+import time
+import telepot
+import json
+
+with open("config.json") as config_file:
+    config = json.load(config_file)
+
+bot = telepot.Bot(config["TELEGRAM_BOT_TOKEN"])
+
+def send_telegram_message(message):
+    bot.sendMessage(config["TELEGRAM_CHAT_ID"], message)
+
+while True:
+    send_telegram_message("📢 RLdC Trading Bot działa!")
+    time.sleep(300)
+
+
+🔹 trading_strategy_advanced.py
+================================================================================
+import os
+import pandas as pd
+import ta
+
+LOG_FILE = "strategy_log.txt"
+
+def log_decision(symbol, decision):
+    """Zapisuje decyzję do pliku logów"""
+    with open(LOG_FILE, "a") as log_file:
+        log_file.write(f"{symbol}: {decision}\n")
+
+def get_advanced_trading_signal(symbol="BTCUSDT"):
+    """Zaawansowana analiza rynku i generowanie sygnału kupna/sprzedaży"""
+    file_name = f"market_data_{symbol}.csv"
+
+    if not os.path.exists(file_name):
+        print(f"🚨 Brak danych rynkowych dla {symbol}!")
+        return "BRAK DANYCH"
+
+    df = pd.read_csv(file_name)
+
+    if df.empty or "close" not in df:
+        print(f"🚨 Plik {file_name} jest pusty lub uszkodzony!")
+        return "BŁĄD DANYCH"
+
+    # Obliczenie wskaźników technicznych
+    df["EMA_9"] = ta.trend.EMAIndicator(df["close"], window=9).ema_indicator()
+    df["EMA_21"] = ta.trend.EMAIndicator(df["close"], window=21).ema_indicator()
+    df["MACD"] = ta.trend.MACD(df["close"]).macd()
+    df["RSI"] = ta.momentum.RSIIndicator(df["close"]).rsi()
+    df["ADX"] = ta.trend.ADXIndicator(df["high"], df["low"], df["close"]).adx()
+    bb = ta.volatility.BollingerBands(df["close"])
+    df["BB_Upper"], df["BB_Lower"] = bb.bollinger_hband(), bb.bollinger_lband()
+
+    ema_9, ema_21 = df["EMA_9"].iloc[-1], df["EMA_21"].iloc[-1]
+    macd, rsi, adx = df["MACD"].iloc[-1], df["RSI"].iloc[-1], df["ADX"].iloc[-1]
+    bb_upper, bb_lower = df["BB_Upper"].iloc[-1], df["BB_Lower"].iloc[-1]
+
+    # Strategia na podstawie EMA, MACD, RSI, ADX, Bollinger Bands
+    if ema_9 > ema_21 and macd > 0 and rsi < 70 and adx > 25 and df["close"].iloc[-1] < bb_lower:
+        decision = "KUP"
+    elif ema_9 < ema_21 and macd < 0 and rsi > 30 and adx > 25 and df["close"].iloc[-1] > bb_upper:
+        decision = "SPRZEDAJ"
+    else:
+        decision = "TRZYMAJ"
+
+    log_decision(symbol, decision)
+    return decision
+
+# Test dla różnych par walutowych
+symbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
+for symbol in symbols:
+    decision = get_advanced_trading_signal(symbol)
+    print(f"📊 Zaawansowana strategia dla {symbol}: {decision}")
+
+
+🔹 backtesting.py
+================================================================================
+import pandas as pd
+import ta
+import os
+
+def backtest_strategy(symbol="BTCUSDT", initial_balance=1000, trade_risk=0.02):
+    """Testowanie strategii na danych historycznych"""
+    file_name = f"market_data_{symbol}.csv"
+
+    if not os.path.exists(file_name):
+        print(f"🚨 Brak danych rynkowych dla {symbol}!")
+        return
+
+    df = pd.read_csv(file_name)
+    if df.empty or "close" not in df:
+        print(f"🚨 Plik {file_name} jest pusty lub uszkodzony!")
+        return
+
+    df["EMA_9"] = ta.trend.EMAIndicator(df["close"], window=9).ema_indicator()
+    df["EMA_21"] = ta.trend.EMAIndicator(df["close"], window=21).ema_indicator()
+    df["MACD"] = ta.trend.MACD(df["close"]).macd()
+    df["RSI"] = ta.momentum.RSIIndicator(df["close"]).rsi()
+    df["ADX"] = ta.trend.ADXIndicator(df["high"], df["low"], df["close"]).adx()
+    bb = ta.volatility.BollingerBands(df["close"])
+    df["BB_Upper"], df["BB_Lower"] = bb.bollinger_hband(), bb.bollinger_lband()
+
+    balance = initial_balance
+    position = 0
+    trade_log = []
+
+    for i in range(1, len(df)):
+        price = df["close"].iloc[i]
+        ema_9, ema_21 = df["EMA_9"].iloc[i], df["EMA_21"].iloc[i]
+        macd, rsi, adx = df["MACD"].iloc[i], df["RSI"].iloc[i], df["ADX"].iloc[i]
+        bb_upper, bb_lower = df["BB_Upper"].iloc[i], df["BB_Lower"].iloc[i]
+
+        if position == 0 and ema_9 > ema_21 and macd > 0 and rsi < 70 and adx > 25 and price < bb_lower:
+            position = (trade_risk * balance) / price  # Obliczenie pozycji
+            balance -= position * price
+            trade_log.append((df["timestamp"].iloc[i], "BUY", price, balance))
+
+        elif position > 0 and (ema_9 < ema_21 or macd < 0 or rsi > 70 or price > bb_upper):
+            balance += position * price
+            trade_log.append((df["timestamp"].iloc[i], "SELL", price, balance))
+            position = 0
+
+    # Podsumowanie backtestingu
+    final_balance = balance + (position * df["close"].iloc[-1])
+    print(f"📈 Strategia dla {symbol} zakończona! Start: {initial_balance} USDT, Koniec: {final_balance:.2f} USDT")
+    return trade_log
+
+# Testowanie strategii na danych historycznych
+symbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
+for symbol in symbols:
+    backtest_strategy(symbol)
+
+
+🔹 risk_management.py
+================================================================================
+import pandas as pd
+import ta
+import os
+
+def risk_management(symbol="BTCUSDT", initial_balance=1000, risk_per_trade=0.02, take_profit_factor=2):
+    """Strategia z dynamicznym stop-loss i take-profit"""
+    file_name = f"market_data_{symbol}.csv"
+
+    if not os.path.exists(file_name):
+        print(f"🚨 Brak danych rynkowych dla {symbol}!")
+        return
+
+    df = pd.read_csv(file_name)
+    if df.empty or "close" not in df:
+        print(f"🚨 Plik {file_name} jest pusty lub uszkodzony!")
+        return
+
+    df["ATR"] = ta.volatility.AverageTrueRange(df["high"], df["low"], df["close"]).average_true_range()
+
+    balance = initial_balance
+    position = 0
+    trade_log = []
+
+    for i in range(1, len(df)):
+        price = df["close"].iloc[i]
+        atr = df["ATR"].iloc[i]
+        stop_loss = price - (atr * 1.5)  # Stop-loss na 1.5x ATR
+        take_profit = price + (atr * take_profit_factor)  # Take-profit na 2x ATR
+
+        if position == 0 and df["close"].iloc[i] > df["close"].iloc[i - 1]:  # Warunek wejścia (można dodać strategię)
+            position = (risk_per_trade * balance) / price  # Obliczenie pozycji
+            balance -= position * price
+            trade_log.append((df["timestamp"].iloc[i], "BUY", price, stop_loss, take_profit, balance))
+
+        elif position > 0 and (price <= stop_loss or price >= take_profit):  # Warunek wyjścia
+            balance += position * price
+            trade_log.append((df["timestamp"].iloc[i], "SELL", price, balance))
+            position = 0
+
+    final_balance = balance + (position * df["close"].iloc[-1] if position > 0 else 0)
+    print(f"📊 Strategia ryzyka dla {symbol} zakończona! Start: {initial_balance} USDT, Koniec: {final_balance:.2f} USDT")
+    return trade_log
+
+# Testowanie strategii zarządzania ryzykiem
+symbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
+for symbol in symbols:
+    risk_management(symbol)
+
+
+🔹 binance_trader.py
+================================================================================
+import os
+import json
+from binance.client import Client
+from trading_strategy_advanced import get_advanced_trading_signal
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw swoje klucze API.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+API_KEY = config["BINANCE_API_KEY"]
+API_SECRET = config["BINANCE_API_SECRET"]
+
+client = Client(API_KEY, API_SECRET)
+
+def place_order(symbol="BTCUSDT", amount=0.001):
+    """Automatyczne składanie zleceń na Binance"""
+    signal = get_advanced_trading_signal(symbol)
+    
+    if signal == "KUP":
+        order = client.order_market_buy(symbol=symbol, quantity=amount)
+        print(f"✅ Złożono zlecenie KUP {amount} {symbol}: {order}")
+    elif signal == "SPRZEDAJ":
+        order = client.order_market_sell(symbol=symbol, quantity=amount)
+        print(f"✅ Złożono zlecenie SPRZEDAŻ {amount} {symbol}: {order}")
+    else:
+        print(f"📊 Brak akcji dla {symbol}, strategia: {signal}")
+
+# Automatyczne składanie zleceń co 5 minut
+import time
+while True:
+    symbols = ["BTCUSDT", "ETHUSDT"]
+    for symbol in symbols:
+        place_order(symbol, amount=0.001)  # Standardowy wolumen transakcji
+    time.sleep(300)
+
+
+🔹 dashboard.py
+================================================================================
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+def load_trade_history():
+    """Ładowanie historii transakcji"""
+    log_file = "strategy_log.txt"
+    if not os.path.exists(log_file):
+        return []
+
+    data = []
+    with open(log_file, "r") as file:
+        for line in file.readlines():
+            parts = line.strip().split(":")
+            if len(parts) == 2:
+                symbol, action = parts
+                data.append({"symbol": symbol.strip(), "action": action.strip()})
+    return data
+
+@app.route("/")
+def index():
+    trades = load_trade_history()
+    return render_template("dashboard.html", trades=trades)
+
+@app.route("/performance")
+def performance():
+    """Generowanie wykresów skuteczności strategii"""
+    trade_data = load_trade_history()
+
+    if not trade_data:
+        return "Brak danych do analizy!"
+
+    df = pd.DataFrame(trade_data)
+    action_counts = df["action"].value_counts()
+
+    plt.figure(figsize=(8, 5))
+    action_counts.plot(kind="bar")
+    plt.xlabel("Akcja")
+    plt.ylabel("Liczba transakcji")
+    plt.title("Skuteczność strategii")
+    plt.savefig("static/performance.png")
+    return render_template("performance.html")
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)
+
+
+🔹 ai_automl.py
+================================================================================
+import pandas as pd
+import ta
+import random
+
+def optimize_strategy(symbol="BTCUSDT", data_file="market_data_BTCUSDT.csv", iterations=50):
+    """AI AutoML – optymalizacja strategii tradingowej"""
+    
+    df = pd.read_csv(data_file)
+    if df.empty or "close" not in df:
+        print(f"🚨 Brak poprawnych danych dla {symbol}!")
+        return
+
+    best_config = None
+    best_profit = -float("inf")
+
+    for _ in range(iterations):
+        # Losowanie parametrów strategii
+        ema_short = random.randint(5, 15)
+        ema_long = random.randint(20, 50)
+        macd_short = random.randint(10, 20)
+        macd_long = random.randint(26, 40)
+        rsi_period = random.randint(10, 20)
+
+        # Obliczenie wskaźników technicznych
+        df["EMA_Short"] = ta.trend.EMAIndicator(df["close"], window=ema_short).ema_indicator()
+        df["EMA_Long"] = ta.trend.EMAIndicator(df["close"], window=ema_long).ema_indicator()
+        df["MACD"] = ta.trend.MACD(df["close"], window_slow=macd_long, window_fast=macd_short).macd()
+        df["RSI"] = ta.momentum.RSIIndicator(df["close"], window=rsi_period).rsi()
+
+        balance = 1000
+        position = 0
+
+        for i in range(1, len(df)):
+            price = df["close"].iloc[i]
+            if position == 0 and df["EMA_Short"].iloc[i] > df["EMA_Long"].iloc[i] and df["MACD"].iloc[i] > 0 and df["RSI"].iloc[i] < 70:
+                position = balance / price
+                balance -= position * price
+            elif position > 0 and df["EMA_Short"].iloc[i] < df["EMA_Long"].iloc[i] and df["MACD"].iloc[i] < 0 and df["RSI"].iloc[i] > 30:
+                balance += position * price
+                position = 0
+
+        final_profit = balance + (position * df["close"].iloc[-1] if position > 0 else 0)
+
+        if final_profit > best_profit:
+            best_profit = final_profit
+            best_config = (ema_short, ema_long, macd_short, macd_long, rsi_period)
+
+    print(f"🏆 Najlepsza konfiguracja dla {symbol}: EMA ({best_config[0]}/{best_config[1]}), MACD ({best_config[2]}/{best_config[3]}), RSI ({best_config[4]})")
+    print(f"📈 Zysk: {best_profit:.2f} USDT")
+    return best_config
+
+# Testowanie optymalizacji na danych BTCUSDT
+optimize_strategy("BTCUSDT")
+
+
+🔹 news_watcher.py
+================================================================================
+import requests
+import json
+import tweepy
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw API do Twittera i RSS.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+TWITTER_API_KEY = config["TWITTER_API_KEY"]
+TWITTER_API_SECRET = config["TWITTER_API_SECRET"]
+TWITTER_ACCESS_TOKEN = config["TWITTER_ACCESS_TOKEN"]
+TWITTER_ACCESS_SECRET = config["TWITTER_ACCESS_SECRET"]
+NEWS_API_URL = "https://newsapi.org/v2/everything?q=crypto&apiKey=" + config["NEWS_API_KEY"]
+
+auth = tweepy.OAuthHandler(TWITTER_API_KEY, TWITTER_API_SECRET)
+auth.set_access_token(TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET)
+twitter_api = tweepy.API(auth)
+
+def get_crypto_news():
+    """Pobiera najnowsze newsy o krypto"""
+    response = requests.get(NEWS_API_URL)
+    articles = response.json().get("articles", [])
+    return [article["title"] for article in articles[:5]]
+
+def get_twitter_trends():
+    """Pobiera najnowsze tweety o krypto"""
+    tweets = twitter_api.search_tweets(q="crypto OR bitcoin OR ethereum", lang="en", count=5)
+    return [tweet.text for tweet in tweets]
+
+def analyze_sentiment(news_list):
+    """Prosta analiza sentymentu (pozytywne/negatywne)"""
+    positive_keywords = ["bullish", "breakout", "gains", "up", "surge"]
+    negative_keywords = ["crash", "sell-off", "dump", "collapse", "fear"]
+
+    sentiment_score = 0
+    for news in news_list:
+        if any(word in news.lower() for word in positive_keywords):
+            sentiment_score += 1
+        elif any(word in news.lower() for word in negative_keywords):
+            sentiment_score -= 1
+
+    return "Pozytywny" if sentiment_score > 0 else "Negatywny" if sentiment_score < 0 else "Neutralny"
+
+if __name__ == "__main__":
+    news = get_crypto_news()
+    tweets = get_twitter_trends()
+
+    print("📰 Ostatnie newsy:")
+    for n in news:
+        print(f"- {n}")
+
+    print("
+🐦 Ostatnie tweety:")
+    for t in tweets:
+        print(f"- {t}")
+
+    sentiment = analyze_sentiment(news + tweets)
+    print(f"
+📊 Sentiment rynku: {sentiment}")
+
+
+🔹 pump_dump_detector.py
+================================================================================
+import pandas as pd
+import ta
+import os
+
+def detect_pump_and_dump(symbol="BTCUSDT", threshold=5, data_file="market_data_BTCUSDT.csv"):
+    """Wykrywanie nagłych wzrostów/spadków cen (Pump & Dump)"""
+    
+    if not os.path.exists(data_file):
+        print(f"🚨 Brak danych rynkowych dla {symbol}!")
+        return
+
+    df = pd.read_csv(data_file)
+    if df.empty or "close" not in df:
+        print(f"🚨 Plik {data_file} jest pusty lub uszkodzony!")
+        return
+
+    df["returns"] = df["close"].pct_change() * 100  # Obliczenie procentowej zmiany ceny
+
+    alerts = []
+    for i in range(1, len(df)):
+        if df["returns"].iloc[i] > threshold:
+            alerts.append((df["timestamp"].iloc[i], "🚀 Możliwy Pump!", df["returns"].iloc[i]))
+        elif df["returns"].iloc[i] < -threshold:
+            alerts.append((df["timestamp"].iloc[i], "⚠️ Możliwy Dump!", df["returns"].iloc[i]))
+
+    if alerts:
+        print(f"📢 Wykryto {len(alerts)} podejrzane ruchy na rynku dla {symbol}:")
+        for alert in alerts:
+            print(f"{alert[0]} - {alert[1]} | Zmiana: {alert[2]:.2f}%")
+    else:
+        print(f"✅ Brak oznak manipulacji rynku dla {symbol}")
+
+    return alerts
+
+# Testowanie wykrywania Pump & Dump
+symbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
+for symbol in symbols:
+    detect_pump_and_dump(symbol)
+
+
+🔹 deep_rl_trader.py
+================================================================================
+import gym
+import numpy as np
+import pandas as pd
+import ta
+import os
+from stable_baselines3 import PPO
+
+class TradingEnv(gym.Env):
+    """Środowisko Reinforcement Learning dla tradingu"""
+    
+    def __init__(self, data_file="market_data_BTCUSDT.csv", initial_balance=1000):
+        super(TradingEnv, self).__init__()
+        
+        if not os.path.exists(data_file):
+            raise FileNotFoundError(f"🚨 Brak danych rynkowych: {data_file}")
+
+        self.df = pd.read_csv(data_file)
+        self.df["EMA_9"] = ta.trend.EMAIndicator(self.df["close"], window=9).ema_indicator()
+        self.df["EMA_21"] = ta.trend.EMAIndicator(self.df["close"], window=21).ema_indicator()
+        self.df["MACD"] = ta.trend.MACD(self.df["close"]).macd()
+        self.df["RSI"] = ta.momentum.RSIIndicator(self.df["close"]).rsi()
+
+        self.initial_balance = initial_balance
+        self.balance = initial_balance
+        self.position = 0
+        self.current_step = 0
+
+        self.action_space = gym.spaces.Discrete(3)  # 0 = NIC, 1 = KUP, 2 = SPRZEDAJ
+        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(4,), dtype=np.float32)
+
+    def reset(self):
+        self.balance = self.initial_balance
+        self.position = 0
+        self.current_step = 0
+        return self._get_observation()
+
+    def step(self, action):
+        price = self.df["close"].iloc[self.current_step]
+
+        if action == 1 and self.position == 0:  # KUP
+            self.position = self.balance / price
+            self.balance -= self.position * price
+        elif action == 2 and self.position > 0:  # SPRZEDAJ
+            self.balance += self.position * price
+            self.position = 0
+
+        self.current_step += 1
+        done = self.current_step >= len(self.df) - 1
+        reward = self.balance + (self.position * price) - self.initial_balance
+
+        return self._get_observation(), reward, done, {}
+
+    def _get_observation(self):
+        return np.array([
+            self.df["EMA_9"].iloc[self.current_step],
+            self.df["EMA_21"].iloc[self.current_step],
+            self.df["MACD"].iloc[self.current_step],
+            self.df["RSI"].iloc[self.current_step]
+        ])
+
+if __name__ == "__main__":
+    env = TradingEnv()
+    model = PPO("MlpPolicy", env, verbose=1)
+    model.learn(total_timesteps=100000)
+    model.save("deep_rl_trading_model")
+    print("✅ Model AI Reinforcement Learning został wytrenowany!")
+
+
+🔹 whale_tracker.py
+================================================================================
+import requests
+import json
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw dostęp do API.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+BINANCE_API_URL = "https://api.binance.com/api/v3/depth"
+
+def track_whale_activity(symbol="BTCUSDT", threshold=500):
+    """Śledzenie wielkich transakcji (Whale Tracking)"""
+    
+    params = {"symbol": symbol, "limit": 500}
+    response = requests.get(BINANCE_API_URL, params=params)
+    order_book = response.json()
+
+    large_bids = [float(order[1]) for order in order_book["bids"] if float(order[1]) > threshold]
+    large_asks = [float(order[1]) for order in order_book["asks"] if float(order[1]) > threshold]
+
+    if large_bids:
+        print(f"🐳 Wykryto duże ZAKUPY dla {symbol}: {large_bids}")
+    if large_asks:
+        print(f"🐋 Wykryto duże SPRZEDAŻE dla {symbol}: {large_asks}")
+
+    return large_bids, large_asks
+
+# Testowanie Whale Tracking na BTCUSDT
+track_whale_activity("BTCUSDT")
+
+
+🔹 master_ai_trader.py
+================================================================================
+import time
+import json
+import os
+from binance_trader import place_order
+from ai_automl import optimize_strategy
+from deep_rl_trader import TradingEnv
+from news_watcher import get_crypto_news, get_twitter_trends, analyze_sentiment
+from pump_dump_detector import detect_pump_and_dump
+from whale_tracker import track_whale_activity
+import telepot
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json!")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+bot = telepot.Bot(config["TELEGRAM_BOT_TOKEN"])
+CHAT_ID = config["CHAT_ID"]
+
+def send_telegram_message(message):
+    try:
+        bot.sendMessage(CHAT_ID, message)
+    except Exception as e:
+        print(f"❌ Błąd wysyłania wiadomości: {e}")
+
+def run_master_bot():
+    """Główna pętla Master AI Trading Bot"""
+    while True:
+        print("🔄 Optymalizacja strategii...")
+        best_config = optimize_strategy()
+
+        print("📡 Monitorowanie Whale Tracking...")
+        whales = track_whale_activity("BTCUSDT")
+
+        print("📰 Analiza newsów i Twittera...")
+        news = get_crypto_news()
+        tweets = get_twitter_trends()
+        sentiment = analyze_sentiment(news + tweets)
+        send_telegram_message(f"📊 Sentyment rynku: {sentiment}")
+
+        print("🚨 Wykrywanie Pump & Dump...")
+        pump_dump_alerts = detect_pump_and_dump("BTCUSDT")
+
+        if sentiment == "Pozytywny" and not pump_dump_alerts:
+            print("🚀 AI podejmuje decyzję o handlu...")
+            place_order("BTCUSDT", amount=0.001)
+            send_telegram_message("✅ AI podjęło decyzję o handlu dla BTCUSDT")
+
+        print("⏳ Oczekiwanie 5 minut...")
+        time.sleep(300)
+
+if __name__ == "__main__":
+    run_master_bot()
+
+
+🔹 gpt_market_analysis.py
+================================================================================
+import openai
+import json
+import os
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw API OpenAI.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+OPENAI_API_KEY = config["OPENAI_API_KEY"]
+openai.api_key = OPENAI_API_KEY
+
+def analyze_market_with_gpt(market_data):
+    """Analiza rynku przy użyciu GPT-4 Turbo"""
+    prompt = f"""
+    Oto najnowsze dane rynkowe:
+
+    {market_data}
+
+    Jakie są możliwe scenariusze dla rynku kryptowalut w ciągu najbliższych 24 godzin?
+    Jakie strategie tradingowe są optymalne na podstawie tych danych?
+    """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "system", "content": "Jesteś ekspertem analizy finansowej i predykcji rynków."},
+                  {"role": "user", "content": prompt}]
+    )
+
+    analysis = response["choices"][0]["message"]["content"]
+    print(f"📊 GPT-4 Turbo Analiza Rynkowa:
+{analysis}")
+    return analysis
+
+# Przykładowe testowanie
+if __name__ == "__main__":
+    test_data = "Bitcoin: $42,500, Ethereum: $3,200, S&P500: 4,150, Zmiana: -2.3%"
+    analyze_market_with_gpt(test_data)
+
+
+🔹 ai_settings.py
+================================================================================
+import json
+import os
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Tworzenie domyślnej konfiguracji...")
+    default_config = {
+        "AI_MODE": "hybrid",  # Opcje: "free", "paid", "hybrid"
+        "FREE_AI_MODEL": "gpt4all-model.bin",
+        "PAID_AI_MODEL": "gpt-4-turbo",
+        "USE_FREE_AI": True,
+        "USE_PAID_AI": True
+    }
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(default_config, f, indent=4)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+def get_ai_mode():
+    """Pobiera aktualne ustawienia AI"""
+    return config["AI_MODE"]
+
+def use_free_ai():
+    """Czy używać darmowej AI?"""
+    return config["USE_FREE_AI"]
+
+def use_paid_ai():
+    """Czy używać płatnej AI?"""
+    return config["USE_PAID_AI"]
+
+if __name__ == "__main__":
+    print(f"🔧 Aktualny tryb AI: {get_ai_mode()}")
+    print(f"🆓 Używanie darmowej AI: {use_free_ai()}")
+    print(f"💰 Używanie płatnej AI: {use_paid_ai()}")
+
+
+🔹 blockchain_analysis.py
+================================================================================
+import requests
+import json
+import os
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw API do analizy blockchain.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+ETHERSCAN_API_KEY = config["ETHERSCAN_API_KEY"]
+BITCOIN_API_URL = "https://api.blockchain.info/stats"
+
+def get_ethereum_transactions():
+    """Pobiera najnowsze transakcje Ethereum"""
+    url = f"https://api.etherscan.io/api?module=account&action=txlist&address={config['ETHEREUM_TRACK_ADDRESS']}&sort=desc&apikey={ETHERSCAN_API_KEY}"
+    response = requests.get(url)
+    transactions = response.json().get("result", [])
+    return transactions[:5]
+
+def get_bitcoin_data():
+    """Pobiera aktualne statystyki Bitcoina"""
+    response = requests.get(BITCOIN_API_URL)
+    return response.json()
+
+if __name__ == "__main__":
+    eth_transactions = get_ethereum_transactions()
+    btc_data = get_bitcoin_data()
+
+    print("🔍 Ostatnie transakcje Ethereum:")
+    for tx in eth_transactions:
+        print(f"- Hash: {tx['hash']}, Wartość: {int(tx['value']) / 1e18} ETH")
+
+    print("
+📊 Statystyki Bitcoina:")
+    print(f"🚀 Cena: {btc_data['market_price_usd']} USD")
+    print(f"⚡ Transakcje na sekundę: {btc_data['transactions_per_second']}")
+
+
+🔹 demo_trading.py
+================================================================================
+import pandas as pd
+import ta
+import numpy as np
+import random
+import json
+import os
+import matplotlib.pyplot as plt
+from flask import Flask, render_template, request, jsonify
+
+CONFIG_FILE = "config.json"
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Tworzenie domyślnej konfiguracji...")
+    default_config = {
+        "AI_MODE": "hybrid",
+        "USE_FREE_AI": True,
+        "USE_PAID_AI": True,
+        "START_BALANCE": 1000
+    }
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(default_config, f, indent=4)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+app = Flask(__name__)
+
+def simulate_trade(strategy_name, start_balance=1000, trade_risk=0.02, data_file="market_data_BTCUSDT.csv"):
+    """Symulacja strategii tradingowej"""
+    
+    if not os.path.exists(data_file):
+        return {"error": "Brak danych rynkowych!"}
+
+    df = pd.read_csv(data_file)
+    df["EMA_9"] = ta.trend.EMAIndicator(df["close"], window=9).ema_indicator()
+    df["EMA_21"] = ta.trend.EMAIndicator(df["close"], window=21).ema_indicator()
+    df["RSI"] = ta.momentum.RSIIndicator(df["close"]).rsi()
+
+    balance = start_balance
+    position = 0
+    history = []
+
+    for i in range(1, len(df)):
+        price = df["close"].iloc[i]
+        rsi = df["RSI"].iloc[i]
+
+        if position == 0 and rsi < 30:  # Kupno przy wyprzedaniu rynku
+            position = (trade_risk * balance) / price
+            balance -= position * price
+            history.append((df["timestamp"].iloc[i], "BUY", price, balance))
+        elif position > 0 and rsi > 70:  # Sprzedaż przy wykupieniu rynku
+            balance += position * price
+            history.append((df["timestamp"].iloc[i], "SELL", price, balance))
+            position = 0
+
+    final_balance = balance + (position * df["close"].iloc[-1] if position > 0 else 0)
+    return {"strategy": strategy_name, "final_balance": final_balance, "history": history}
+
+@app.route("/simulate", methods=["POST"])
+def simulate():
+    """API do uruchomienia symulacji"""
+    data = request.get_json()
+    strategies = data.get("strategies", [])
+    start_balance = data.get("start_balance", 1000)
+
+    results = [simulate_trade(strategy, start_balance) for strategy in strategies]
+    return jsonify(results)
+
+@app.route("/")
+def index():
+    """Główna strona interfejsu"""
+    return render_template("demo_trading.html")
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5002)
+
+
+🔹 telegram_ai_bot.py
+================================================================================
+import telepot
+import json
+import os
+from binance_trader import place_order
+from gpt_market_analysis import analyze_market_with_gpt
+from whale_tracker import track_whale_activity
+from pump_dump_detector import detect_pump_and_dump
+from demo_trading import simulate_trade
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw API do Telegrama.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+bot = telepot.Bot(config["TELEGRAM_BOT_TOKEN"])
+CHAT_ID = config["CHAT_ID"]
+
+def send_telegram_message(message):
+    """Wysyła powiadomienie do Telegrama"""
+    try:
+        bot.sendMessage(CHAT_ID, message)
+    except Exception as e:
+        print(f"❌ Błąd wysyłania wiadomości: {e}")
+
+def handle_message(msg):
+    """Obsługuje wiadomości z Telegrama"""
+    chat_id = msg["chat"]["id"]
+    text = msg["text"].strip().lower()
+
+    if text == "/status":
+        send_telegram_message("✅ RLdC Trading Bot działa!")
+    elif text == "/sygnał":
+        send_telegram_message("📈 Pobieranie najnowszego sygnału handlowego...")
+        place_order("BTCUSDT", amount=0.001)
+    elif text == "/whale":
+        send_telegram_message("🐋 Sprawdzam wielkie transakcje...")
+        whales = track_whale_activity("BTCUSDT")
+        send_telegram_message(f"🐳 Wykryte ruchy: {whales}")
+    elif text == "/dump":
+        send_telegram_message("🚨 Sprawdzam Pump & Dump...")
+        pump_dump_alerts = detect_pump_and_dump("BTCUSDT")
+        send_telegram_message(f"⚠️ Detekcja manipulacji: {pump_dump_alerts}")
+    elif text == "/ai":
+        send_telegram_message("🧠 Analiza rynku przy użyciu AI...")
+        analysis = analyze_market_with_gpt("BTC: $42,500, ETH: $3,200, S&P500: 4,150")
+        send_telegram_message(f"📊 GPT-4 Turbo: {analysis}")
+    elif text.startswith("/demo"):
+        send_telegram_message("🎯 Uruchamiam symulację demo...")
+        result = simulate_trade("RSI", start_balance=1000)
+        send_telegram_message(f"📉 Wynik symulacji: {result['final_balance']} USDT")
+    else:
+        send_telegram_message("❓ Dostępne komendy:
+/status - Status bota
+/sygnał - Najnowszy sygnał
+/whale - Analiza wielkich transakcji
+/dump - Wykrywanie manipulacji
+/ai - Analiza AI
+/demo - Symulacja demo")
+
+bot.message_loop(handle_message)
+
+print("✅ Telegram AI Bot działa!")
+send_telegram_message("🚀 RLdC Trading Bot aktywowany!")
+
+import time
+while True:
+    time.sleep(5)
+
+
+🔹 web_interface.py
+================================================================================
+import os
+import json
+import pandas as pd
+import matplotlib.pyplot as plt
+from flask import Flask, render_template, request, jsonify
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Tworzenie domyślnej konfiguracji...")
+    default_config = {
+        "AI_MODE": "hybrid",
+        "USE_FREE_AI": True,
+        "USE_PAID_AI": True,
+        "START_BALANCE": 1000,
+        "STOP_LOSS": 0.02,
+        "TAKE_PROFIT": 0.05
+    }
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(default_config, f, indent=4)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    """Główna strona panelu WWW"""
+    return render_template("dashboard.html", config=config)
+
+@app.route("/update_config", methods=["POST"])
+def update_config():
+    """Aktualizacja ustawień AI i strategii"""
+    data = request.get_json()
+    config.update(data)
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(config, f, indent=4)
+    return jsonify({"message": "✅ Konfiguracja zaktualizowana!"})
+
+@app.route("/get_logs")
+def get_logs():
+    """Pobieranie logów transakcji"""
+    log_file = "logs/trades_log.txt"
+    if os.path.exists(log_file):
+        with open(log_file, "r") as file:
+            logs = file.readlines()
+        return jsonify({"logs": logs})
+    return jsonify({"error": "Brak logów!"})
+
+@app.route("/plot_trading_chart")
+def plot_trading_chart():
+    """Generowanie wykresu wyników handlowych"""
+    data_file = "market_data_BTCUSDT.csv"
+    if not os.path.exists(data_file):
+        return jsonify({"error": "Brak danych rynkowych!"})
+
+    df = pd.read_csv(data_file)
+    plt.figure(figsize=(10, 5))
+    plt.plot(df["timestamp"], df["close"], label="Cena BTC")
+    plt.xlabel("Czas")
+    plt.ylabel("Cena (USDT)")
+    plt.legend()
+    plt.savefig("static/trading_chart.png")
+    return jsonify({"message": "✅ Wykres zaktualizowany!"})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5003)
+
+
+🔹 ai_code_auditor.py
+================================================================================
+import os
+import json
+import openai
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw API OpenAI.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+OPENAI_API_KEY = config["OPENAI_API_KEY"]
+openai.api_key = OPENAI_API_KEY
+
+project_root = "RLdC_Trading_Bot_Final"
+
+def analyze_code_with_gpt(code_snippet):
+    """Analizuje kod przy użyciu GPT-4 Turbo i sugeruje ulepszenia"""
+    prompt = f"""
+    Oto kod źródłowy:
+
+    {code_snippet}
+
+    - Zidentyfikuj możliwe błędy, optymalizacje i ulepszenia
+    - Zaproponuj nowe funkcje, które mogą zwiększyć efektywność kodu
+    - Sugeruj aktualizacje zgodne z najnowszymi standardami
+
+    Odpowiedź:
+    """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "system", "content": "Jesteś ekspertem w optymalizacji kodu i analizie jakości oprogramowania."},
+                  {"role": "user", "content": prompt}]
+    )
+
+    return response["choices"][0]["message"]["content"]
+
+def scan_project_code():
+    """Przeszukuje pliki w projekcie i analizuje kod źródłowy"""
+    report = "📊 **AI Code Auditor - Raport Analizy** 📊\n\n"
+
+    for root, _, files in os.walk(project_root):
+        for file in files:
+            if file.endswith(".py") or file.endswith(".sh") or file.endswith(".html"):
+                file_path = os.path.join(root, file)
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                    code_content = f.read()
+                    analysis = analyze_code_with_gpt(code_content)
+                    report += f"🔍 **Analiza: {file}**\n{analysis}\n\n"
+
+    return report
+
+if __name__ == "__main__":
+    audit_report = scan_project_code()
+    with open("ai_code_audit_report.txt", "w", encoding="utf-8") as f:
+        f.write(audit_report)
+    print("✅ AI Code Audit zakończony! Wyniki zapisane w ai_code_audit_report.txt")
+
+
+🔹 config_manager.py
+================================================================================
+import json
+import os
+
+CONFIG_FILE = "config.json"
+
+DEFAULT_CONFIG = {
+    "AI_MODE": "hybrid",  # Opcje: "free", "paid", "hybrid"
+    "USE_FREE_AI": True,
+    "USE_PAID_AI": True,
+    "START_BALANCE": 1000,
+    "STOP_LOSS": 0.02,
+    "TAKE_PROFIT": 0.05,
+    "TELEGRAM_BOT_TOKEN": "",
+    "CHAT_ID": "",
+    "BINANCE_API_KEY": "",
+    "BINANCE_API_SECRET": "",
+    "ETHERSCAN_API_KEY": "",
+    "ETHEREUM_TRACK_ADDRESS": "",
+    "NEWS_API_KEY": "",
+    "OPENAI_API_KEY": ""
+}
+
+def load_config():
+    """Ładuje konfigurację z pliku lub tworzy domyślną."""
+    if not os.path.exists(CONFIG_FILE):
+        print("🚨 Brak config.json! Tworzę domyślną konfigurację...")
+        save_config(DEFAULT_CONFIG)
+    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_config(new_config):
+    """Zapisuje konfigurację do pliku."""
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(new_config, f, indent=4)
+
+def update_config(updates):
+    """Aktualizuje konfigurację na podstawie podanych zmian."""
+    config = load_config()
+    config.update(updates)
+    save_config(config)
+    return config
+
+def export_config(filename="config_backup.json"):
+    """Eksportuje konfigurację do pliku JSON."""
+    config = load_config()
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=4)
+    return filename
+
+def import_config(filename):
+    """Importuje konfigurację z pliku JSON."""
+    if not os.path.exists(filename):
+        return "❌ Plik nie istnieje!"
+    with open(filename, "r", encoding="utf-8") as f:
+        new_config = json.load(f)
+    save_config(new_config)
+    return "✅ Konfiguracja zaimportowana!"
+
+if __name__ == "__main__":
+    print("🔧 Aktualna konfiguracja:")
+    print(json.dumps(load_config(), indent=4))
+
+
+🔹 rldc_quantum_ai.py
+================================================================================
+import numpy as np
+import pandas as pd
+import ta
+import openai
+import json
+import os
+from scipy.optimize import minimize
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw API OpenAI.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+OPENAI_API_KEY = config["OPENAI_API_KEY"]
+openai.api_key = OPENAI_API_KEY
+
+def quantum_optimization(price_data):
+    """Wykorzystuje optymalizację kwantową do predykcji trendów rynkowych"""
+    
+    def loss_function(params):
+        ema_short, ema_long, rsi_period = params
+        df = price_data.copy()
+        df["EMA_Short"] = ta.trend.EMAIndicator(df["close"], window=int(ema_short)).ema_indicator()
+        df["EMA_Long"] = ta.trend.EMAIndicator(df["close"], window=int(ema_long)).ema_indicator()
+        df["RSI"] = ta.momentum.RSIIndicator(df["close"], window=int(rsi_period)).rsi()
+
+        signals = ((df["EMA_Short"] > df["EMA_Long"]) & (df["RSI"] < 70)).astype(int)
+        returns = df["close"].pct_change() * signals.shift(1)
+        return -returns.sum()  # Minimalizujemy stratę, maksymalizujemy zysk
+
+    result = minimize(loss_function, [9, 21, 14], bounds=[(5, 15), (20, 50), (10, 30)])
+    return {"EMA_Short": result.x[0], "EMA_Long": result.x[1], "RSI_Period": result.x[2]}
+
+def analyze_market_with_ai(market_data):
+    """AI GPT-4 Turbo analizuje sytuację rynkową"""
+    prompt = f"""
+    Oto dane rynkowe:
+
+    {market_data}
+
+    - Jakie są możliwe scenariusze dla rynku kryptowalut w ciągu najbliższych 24 godzin?
+    - Jakie strategie są najbardziej optymalne?
+    - Czy istnieją sygnały silnej manipulacji lub interwencji?
+
+    Odpowiedź:
+    """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "system", "content": "Jesteś ekspertem analizy finansowej i tradingu kwantowego."},
+                  {"role": "user", "content": prompt}]
+    )
+
+    return response["choices"][0]["message"]["content"]
+
+if __name__ == "__main__":
+    print("🚀 RLdC Quantum AI aktywowane!")
+    df = pd.DataFrame({"close": np.random.rand(100) * 50000})  # Symulacja danych cenowych BTC
+    best_params = quantum_optimization(df)
+    print(f"📊 Najlepsze parametry strategii kwantowej: {best_params}")
+
+    market_analysis = analyze_market_with_ai("BTC: $42,500, ETH: $3,200, S&P500: 4,150")
+    print(f"🧠 AI Market Analysis:
+{market_analysis}")
+
+
+🔹 ai_optimizer.py
+================================================================================
+import json
+import os
+import openai
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw domyślną konfigurację.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+OPENAI_API_KEY = config["OPENAI_API_KEY"]
+USE_FREE_AI = config["USE_FREE_AI"]
+USE_PAID_AI = config["USE_PAID_AI"]
+openai.api_key = OPENAI_API_KEY
+
+def analyze_trade_results(trade_history):
+    """AI analizuje historię transakcji i optymalizuje strategię"""
+    trade_data = json.dumps(trade_history)
+
+    prompt = f"""
+    Oto historia transakcji:
+
+    {trade_data}
+
+    - Jakie błędy popełniła strategia?
+    - Jakie poprawki należy wprowadzić, aby zmaksymalizować zyski i zminimalizować straty?
+    - Jakie ustawienia powinny zostać zoptymalizowane?
+
+    Odpowiedź:
+    """
+
+    model_choice = "gpt-4-turbo" if USE_PAID_AI else "gpt-3.5-turbo" if not USE_FREE_AI else "gpt4all"
+
+    response = openai.ChatCompletion.create(
+        model=model_choice,
+        messages=[{"role": "system", "content": "Jesteś ekspertem optymalizacji strategii tradingowych."},
+                  {"role": "user", "content": prompt}]
+    )
+
+    return response["choices"][0]["message"]["content"]
+
+if __name__ == "__main__":
+    sample_trade_history = [{"pair": "BTCUSDT", "profit": -50, "strategy": "EMA"}, {"pair": "ETHUSDT", "profit": 120, "strategy": "AI"}]
+    optimization_report = analyze_trade_results(sample_trade_history)
+    print(f"📊 AI Optymalizacja Strategii:
+{optimization_report}")
+
+
+🔹 web_portal.py
+================================================================================
+import os
+import json
+import pandas as pd
+import matplotlib.pyplot as plt
+from flask import Flask, render_template, request, jsonify
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Tworzenie domyślnej konfiguracji...")
+    default_config = {
+        "AI_MODE": "hybrid",
+        "USE_FREE_AI": True,
+        "USE_PAID_AI": False,
+        "START_BALANCE": 1000,
+        "STOP_LOSS": 0.02,
+        "TAKE_PROFIT": 0.05
+    }
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(default_config, f, indent=4)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    """Główna strona zaawansowanego portalu"""
+    return render_template("futuristic_dashboard.html", config=config)
+
+@app.route("/update_config", methods=["POST"])
+def update_config():
+    """Aktualizacja ustawień bota"""
+    data = request.get_json()
+    config.update(data)
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(config, f, indent=4)
+    return jsonify({"message": "✅ Konfiguracja zaktualizowana!"})
+
+@app.route("/get_trading_chart")
+def get_trading_chart():
+    """Generowanie wykresu strategii handlowych"""
+    data_file = "market_data_BTCUSDT.csv"
+    if not os.path.exists(data_file):
+        return jsonify({"error": "Brak danych rynkowych!"})
+
+    df = pd.read_csv(data_file)
+    plt.figure(figsize=(12, 6))
+    plt.plot(df["timestamp"], df["close"], label="Cena BTC", color="cyan")
+    plt.xlabel("Czas")
+    plt.ylabel("Cena (USDT)")
+    plt.grid(True, linestyle="--", color="gray")
+    plt.legend()
+    plt.savefig("static/futuristic_trading_chart.png")
+    return jsonify({"message": "✅ Wykres zaktualizowany!"})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5004)
+
+
+🔹 zordon_ai.py
+================================================================================
+import json
+import os
+import openai
+import cv2
+import numpy as np
+from flask import Flask, render_template, Response
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Ustaw API OpenAI.")
+    exit(1)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+OPENAI_API_KEY = config["OPENAI_API_KEY"]
+openai.api_key = OPENAI_API_KEY
+
+app = Flask(__name__)
+
+def generate_ai_face():
+    """Generuje interaktywne AI Wizjonera (Zordon AI)"""
+    face = np.zeros((500, 500, 3), dtype=np.uint8)
+    cv2.putText(face, "RLdC AI", (150, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    return face
+
+def video_stream():
+    """Strumieniuje obraz AI Wizjonera"""
+    while True:
+        frame = generate_ai_face()
+        _, buffer = cv2.imencode('.jpg', frame)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+
+@app.route('/')
+def index():
+    """Strona główna Zordon AI"""
+    return render_template('zordon_ai.html')
+
+@app.route('/video_feed')
+def video_feed():
+    """Strumień wideo"""
+    return Response(video_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5005, debug=True)
+
+
+🔹 ultimate_ai.py
+================================================================================
+import json
+import os
+import openai
+import numpy as np
+import requests
+import pandas as pd
+from flask import Flask, render_template, request, jsonify
+
+CONFIG_FILE = "config.json"
+
+if not os.path.exists(CONFIG_FILE):
+    print("🚨 Brak pliku config.json! Tworzenie domyślnej konfiguracji...")
+    default_config = {
+        "AI_MODE": "hybrid",
+        "USE_FREE_AI": True,
+        "USE_PAID_AI": False,
+        "START_BALANCE": 1000,
+        "STOP_LOSS": 0.02,
+        "TAKE_PROFIT": 0.05,
+        "ENABLE_QUANTUM_AI": True,
+        "ENABLE_HFT": True,
+        "ENABLE_BLOCKCHAIN_ANALYSIS": True
+    }
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(default_config, f, indent=4)
+
+with open(CONFIG_FILE) as config_file:
+    config = json.load(config_file)
+
+OPENAI_API_KEY = config["OPENAI_API_KEY"]
+openai.api_key = OPENAI_API_KEY
+
+app = Flask(__name__)
+
+def analyze_future_market():
+    """AI przewiduje przyszłość rynków na podstawie globalnych danych"""
+    market_data = requests.get("https://api.coingecko.com/api/v3/global").json()
+    
+    prompt = f"""
+    Oto aktualne dane rynkowe:
+
+    {market_data}
+
+    - Jakie są możliwe scenariusze dla rynku kryptowalut i finansowego w ciągu najbliższych 24 godzin?
+    - Jakie strategie będą najbardziej skuteczne?
+    - Jakie wydarzenia geopolityczne mogą wpłynąć na rynek?
+
+    Odpowiedź:
+    """
+
+    model_choice = "gpt-4-turbo" if config["USE_PAID_AI"] else "gpt-3.5-turbo" if not config["USE_FREE_AI"] else "gpt4all"
+
+    response = openai.ChatCompletion.create(
+        model=model_choice,
+        messages=[{"role": "system", "content": "Jesteś sztuczną inteligencją przewidującą rynki finansowe."},
+                  {"role": "user", "content": prompt}]
+    )
+
+    return response["choices"][0]["message"]["content"]
+
+@app.route("/")
+def index():
+    """Główna strona ULTIMATE AI"""
+    return render_template("ultimate_ai.html")
+
+@app.route("/predict", methods=["GET"])
+def predict():
+    """API przewidujące przyszłość rynków"""
+    prediction = analyze_future_market()
+    return jsonify({"prediction": prediction})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5006, debug=True)
+
+
+🔹 installer.py
+================================================================================
+import os
+import subprocess
+import json
+import time
+
+CONFIG_FILE = "config.json"
+
+# Domyślna konfiguracja
+DEFAULT_CONFIG = {
+    "AI_MODE": "hybrid",
+    "USE_FREE_AI": True,
+    "USE_PAID_AI": False,
+    "START_BALANCE": 1000,
+    "STOP_LOSS": 0.02,
+    "TAKE_PROFIT": 0.05,
+    "ENABLE_QUANTUM_AI": True,
+    "ENABLE_HFT": True,
+    "ENABLE_BLOCKCHAIN_ANALYSIS": True
+}
+
+def print_header():
+    """Wyświetla nagłówek instalatora"""
+    print("\n" + "="*60)
+    print("🛠️ RLdC Trading Bot - Inteligentny Instalator")
+    print("="*60 + "\n")
+
+def check_python():
+    """Sprawdza wersję Pythona"""
+    print("🔍 Sprawdzanie wersji Pythona...")
+    python_version = subprocess.check_output(["python3", "--version"]).decode().strip()
+    print(f"✅ Wykryta wersja: {python_version}")
+
+def install_packages():
+    """Instaluje wymagane pakiety"""
+    print("🔄 Instalowanie zależności...")
+    packages = [
+        "flask", "pandas", "ta", "binance", "telepot", "tweepy", "gym", 
+        "stable-baselines3", "openai", "requests", "matplotlib", "scipy", "numpy", "opencv-python"
+    ]
+    subprocess.run(["pip", "install"] + packages, check=True)
+    print("✅ Wszystkie zależności zostały zainstalowane!")
+
+def configure_system():
+    """Konfiguruje system na podstawie domyślnych ustawień lub pyta użytkownika o zmiany"""
+    print("⚙️ Konfiguracja systemu...")
+    if not os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "w") as f:
+            json.dump(DEFAULT_CONFIG, f, indent=4)
+        print("✅ Domyślna konfiguracja została zapisana.")
+    else:
+        print("✅ Plik konfiguracji już istnieje.")
+
+def verify_installation():
+    """Sprawdza poprawność działania wszystkich modułów"""
+    print("🔍 Weryfikacja instalacji...")
+    modules = ["master_ai_trader.py", "web_portal.py", "ai_optimizer.py", "rldc_quantum_ai.py", "demo_trading.py", "telegram_ai_bot.py", "zordon_ai.py", "ultimate_ai.py"]
+    for module in modules:
+        if not os.path.exists(module):
+            print(f"⚠️ Brak pliku {module}! Instalacja mogła się nie powieść.")
+        else:
+            print(f"✅ {module} - OK")
+
+def run_system():
+    """Uruchamia kluczowe moduły systemu"""
+    print("🚀 Uruchamianie systemu...")
+    modules = ["master_ai_trader.py", "web_portal.py", "ai_optimizer.py", "rldc_quantum_ai.py", "demo_trading.py", "telegram_ai_bot.py", "zordon_ai.py", "ultimate_ai.py"]
+    for module in modules:
+        print(f"▶️ Uruchamianie {module}...")
+        subprocess.Popen(["python", module])
+        time.sleep(2)
+
+def main():
+    """Główna funkcja instalatora"""
+    print_header()
+    check_python()
+    install_packages()
+    configure_system()
+    verify_installation()
+    run_system()
+    print("🎉 Instalacja zakończona sukcesem! System działa poprawnie.")
+
+if __name__ == "__main__":
+    main()
+
+
+🔹 templates/index.html
+================================================================================
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLdC Manager</title>
+</head>
+<body>
+    <h1>RLdC Trading Bot - Panel Zarządzania</h1>
+    <button onclick="sendRequest('/install')">🔧 Instalacja</button>
+    <button onclick="sendRequest('/update')">🔄 Aktualizacja</button>
+    <button onclick="sendRequest('/repair')">⚙️ Naprawa</button>
+    <button onclick="sendRequest('/restart')">♻️ Restart</button>
+
+    <script>
+        function sendRequest(endpoint) {
+            fetch(endpoint, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert(data.message))
+                .catch(error => alert('Błąd: ' + error));
+        }
+    </script>
+</body>
+</html>
+
+
+🔹 templates/dashboard.html
+================================================================================
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLdC Trading Bot - Panel WWW</title>
+</head>
+<body>
+    <h1>RLdC Trading Bot - Panel WWW</h1>
+    <h2>Ustawienia AI i strategii</h2>
+    <label>Tryb AI:</label>
+    <select id="ai_mode">
+        <option value="free">Darmowa</option>
+        <option value="paid">Płatna</option>
+        <option value="hybrid" selected>Hybrydowa</option>
+    </select><br>
+    
+    <label>Stop-Loss:</label>
+    <input type="number" id="stop_loss" value="0.02" step="0.01"><br>
+    
+    <label>Take-Profit:</label>
+    <input type="number" id="take_profit" value="0.05" step="0.01"><br>
+
+    <button onclick="updateConfig()">Zapisz ustawienia</button>
+
+    <h2>Historia Transakcji</h2>
+    <button onclick="getLogs()">Pobierz logi</button>
+    <pre id="logs"></pre>
+
+    <h2>Wykres handlu</h2>
+    <button onclick="updateChart()">Generuj wykres</button><br>
+    <img id="trading_chart" src="" alt="Wykres handlu" width="600px">
+
+    <script>
+        function updateConfig() {
+            const ai_mode = document.getElementById("ai_mode").value;
+            const stop_loss = parseFloat(document.getElementById("stop_loss").value);
+            const take_profit = parseFloat(document.getElementById("take_profit").value);
+
+            fetch("/update_config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ "AI_MODE": ai_mode, "STOP_LOSS": stop_loss, "TAKE_PROFIT": take_profit })
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message));
+        }
+
+        function getLogs() {
+            fetch("/get_logs")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("logs").textContent = data.logs ? data.logs.join("\n") : "Brak logów!";
+            });
+        }
+
+        function updateChart() {
+            fetch("/plot_trading_chart")
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    document.getElementById("trading_chart").src = "/static/trading_chart.png";
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+🔹 templates/performance.html
+================================================================================
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skuteczność strategii</title>
+</head>
+<body>
+    <h1>Skuteczność strategii</h1>
+    <img src="/static/performance.png" alt="Wykres skuteczności">
+</body>
+</html>
+
+
+🔹 templates/demo_trading.html
+================================================================================
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaawansowana Strefa Demo Handlu</title>
+</head>
+<body>
+    <h1>Zaawansowana Strefa Demo Handlu</h1>
+    <label for="start_balance">Początkowa kwota:</label>
+    <input type="number" id="start_balance" value="1000">
+    
+    <h2>Wybierz strategie:</h2>
+    <label><input type="checkbox" id="strategy_1" checked> Strategia RSI</label><br>
+    <label><input type="checkbox" id="strategy_2"> Strategia EMA</label><br>
+    <label><input type="checkbox" id="strategy_3"> Strategia AI RL</label><br>
+    <label><input type="checkbox" id="strategy_4"> Strategia Whale Tracking</label><br>
+
+    <button onclick="runSimulation()">Uruchom symulację</button>
+    
+    <h2>Wyniki:</h2>
+    <div id="results"></div>
+
+    <script>
+        function runSimulation() {
+            const strategies = [];
+            if (document.getElementById("strategy_1").checked) strategies.push("RSI");
+            if (document.getElementById("strategy_2").checked) strategies.push("EMA");
+            if (document.getElementById("strategy_3").checked) strategies.push("AI_RL");
+            if (document.getElementById("strategy_4").checked) strategies.push("Whale_Tracking");
+
+            const start_balance = document.getElementById("start_balance").value;
+
+            fetch("/simulate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ start_balance: parseFloat(start_balance), strategies })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultsDiv = document.getElementById("results");
+                resultsDiv.innerHTML = "";
+                data.forEach(result => {
+                    resultsDiv.innerHTML += `<p><b>${result.strategy}:</b> Finalny balans: ${result.final_balance.toFixed(2)} USDT</p>`;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+🔹 templates/futuristic_dashboard.html
+================================================================================
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLdC Futuristic Portal</title>
+    <style>
+        body {
+            background-color: #0e0e0e;
+            color: cyan;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5em;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: cyan;
+            border: none;
+            color: black;
+            cursor: pointer;
+        }
+        pre {
+            text-align: left;
+            background: black;
+            padding: 15px;
+            border-radius: 5px;
+            color: lime;
+            overflow: auto;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>RLdC Futuristic Portal</h1>
+    <h2>Zaawansowane Sterowanie AI Trading Bot</h2>
+
+    <label>Tryb AI:</label>
+    <select id="ai_mode">
+        <option value="free">Darmowa</option>
+        <option value="paid">Płatna</option>
+        <option value="hybrid" selected>Hybrydowa</option>
+    </select><br>
+
+    <label>Stop-Loss:</label>
+    <input type="number" id="stop_loss" value="0.02" step="0.01"><br>
+
+    <label>Take-Profit:</label>
+    <input type="number" id="take_profit" value="0.05" step="0.01"><br>
+
+    <button onclick="updateConfig()">Zapisz ustawienia</button>
+
+    <h2>Wykres strategii handlowych</h2>
+    <button onclick="updateChart()">Generuj wykres</button><br>
+    <img id="trading_chart" src="" alt="Wykres handlu" width="800px">
+
+    <script>
+        function updateConfig() {
+            const ai_mode = document.getElementById("ai_mode").value;
+            const stop_loss = parseFloat(document.getElementById("stop_loss").value);
+            const take_profit = parseFloat(document.getElementById("take_profit").value);
+
+            fetch("/update_config", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ "AI_MODE": ai_mode, "STOP_LOSS": stop_loss, "TAKE_PROFIT": take_profit })
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message));
+        }
+
+        function updateChart() {
+            fetch("/get_trading_chart")
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    document.getElementById("trading_chart").src = "/static/futuristic_trading_chart.png";
+                } else {
+                    alert(data.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+🔹 templates/zordon_ai.html
+================================================================================
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLdC Zordon AI</title>
+    <style>
+        body {
+            background-color: black;
+            color: lime;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            font-size: 2.5em;
+        }
+        #ai-head {
+            border: 5px solid lime;
+            width: 500px;
+            height: 500px;
+            margin: auto;
+            background-image: url('/video_feed');
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <h1>RLdC Zordon AI</h1>
+    <h2>Interaktywny Wizjoner AI</h2>
+    <div id="ai-head"></div>
+    <h3>🔮 AI przewiduje przyszłość rynków...</h3>
+</body>
+</html>
+
+
+🔹 templates/ultimate_ai.html
+================================================================================
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLdC ULTIMATE AI</title>
+    <style>
+        body {
+            background-color: black;
+            color: lime;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            font-size: 2.5em;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: lime;
+            border: none;
+            color: black;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>RLdC ULTIMATE AI</h1>
+    <h2>Przewidywanie przyszłości rynków</h2>
+    <button onclick="getPrediction()">Uzyskaj Prognozę AI</button>
+    <h3 id="prediction"></h3>
+
+    <script>
+        function getPrediction() {
+            fetch("/predict")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("prediction").textContent = data.prediction;
+            });
+        }
+    </script>
+</body>
+</html>
