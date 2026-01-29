@@ -1,7 +1,9 @@
 import json
 import os
+from datetime import datetime
 
 CONFIG_FILE = "config.json"
+FIRST_RUN_FILE = ".rldc_first_run"
 
 DEFAULT_CONFIG = {
     "AI_MODE": "hybrid",  # Opcje: "free", "paid", "hybrid"
@@ -27,6 +29,17 @@ def load_config():
         save_config(DEFAULT_CONFIG)
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def bootstrap_environment():
+    """Konfiguruje środowisko przy pierwszym uruchomieniu i zwraca konfigurację."""
+    config = load_config()
+    if not os.path.exists(FIRST_RUN_FILE):
+        for directory in ("logs", "data"):
+            os.makedirs(directory, exist_ok=True)
+        with open(FIRST_RUN_FILE, "w", encoding="utf-8") as f:
+            f.write(f"initialized_at={datetime.utcnow().isoformat()}Z\n")
+        print("✅ Pierwsze uruchomienie: środowisko zostało skonfigurowane.")
+    return config
 
 def save_config(new_config):
     """Zapisuje konfigurację do pliku."""

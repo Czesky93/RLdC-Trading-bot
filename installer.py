@@ -3,20 +3,11 @@ import subprocess
 import json
 import time
 
+from config_manager import bootstrap_environment, DEFAULT_CONFIG
+
 CONFIG_FILE = "config.json"
 
 # Domyślna konfiguracja
-DEFAULT_CONFIG = {
-    "AI_MODE": "hybrid",
-    "USE_FREE_AI": True,
-    "USE_PAID_AI": False,
-    "START_BALANCE": 1000,
-    "STOP_LOSS": 0.02,
-    "TAKE_PROFIT": 0.05,
-    "ENABLE_QUANTUM_AI": True,
-    "ENABLE_HFT": True,
-    "ENABLE_BLOCKCHAIN_ANALYSIS": True
-}
 
 def print_header():
     """Wyświetla nagłówek instalatora"""
@@ -44,11 +35,10 @@ def configure_system():
     """Konfiguruje system na podstawie domyślnych ustawień lub pyta użytkownika o zmiany"""
     print("⚙️ Konfiguracja systemu...")
     if not os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, "w") as f:
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(DEFAULT_CONFIG, f, indent=4)
-        print("✅ Domyślna konfiguracja została zapisana.")
-    else:
-        print("✅ Plik konfiguracji już istnieje.")
+    bootstrap_environment()
+    print("✅ Konfiguracja systemu zakończona.")
 
 def verify_installation():
     """Sprawdza poprawność działania wszystkich modułów"""
