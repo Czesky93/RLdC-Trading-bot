@@ -14,6 +14,7 @@ RLdC Trading AiNalyzer Bot to modularny projekt do pobierania danych OHLCV (read
 - Telegram bot + Web UI (FastAPI).
 - Scheduler (APScheduler).
 - Mechanizm self-improve: analiza logów i propozycje poprawek.
+- Moduły eksperymentalne: Quantum Optimization, Deep RL, Blockchain Analysis, AI Predictive, HFT, Ultimate AI (tryb symulacyjny).
 
 ## EN — Short description
 RLdC Trading AiNalyzer Bot is a modular Python project for read-only market data ingestion, indicator calculation, conservative signals, and reports. It includes Telegram, a lightweight web UI, and a safe self-improvement workflow via PRs.
@@ -53,6 +54,14 @@ rldc run
 rldc web --host 0.0.0.0 --port 8000
 ```
 
+## Portale AI (MVP)
+```bash
+rldc portal --port 5004
+rldc portal-config --port 5003
+rldc portal-zordon --port 5005
+rldc portal-ultimate --port 5006
+```
+
 ## Telegram
 ```bash
 rldc telegram
@@ -69,3 +78,13 @@ Bot nie modyfikuje kodu w locie. Moduł `self_improve` analizuje logi błędów 
 
 ## Log.txt
 Każdy eksport lub publikacja artefaktów powinna zawierać plik `log.txt` z opisem projektu, wykonanymi i planowanymi działaniami oraz znanymi błędami.
+
+## Moduły eksperymentalne (bez gwarancji)
+```bash
+rldc quantum-optimize
+rldc deep-rl --episodes 50
+rldc predictive --horizon 24h
+rldc hft-sim --orders 1000
+rldc blockchain-scan --transactions 0
+rldc ultimate-ai
+```

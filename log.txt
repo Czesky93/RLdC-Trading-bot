@@ -9,11 +9,13 @@ Wykonane działania:
 - Dodano SQLite storage, wskaźniki, sygnały i raporty.
 - Dodano CLI, Web UI, Telegram bot, scheduler.
 - Dodano testy, skrypty i CI.
+- Dodano moduły eksperymentalne (Quantum/Deep RL/HFT/Blockchain/Ultimate AI) i portale MVP.
 
 Planowane działania:
 - Rozszerzyć backtest o pełny PnL.
 - Dodać więcej wskaźników i lepsze reguły sygnałów.
 - Usprawnić self-improve (automatyczne PR w osobnej gałęzi po testach).
+- Dodać realne integracje dla modułów eksperymentalnych (po walidacji ryzyka).
 
 Znane błędy i obejścia:
 - Jeśli brak danych OHLCV, uruchom: rldc fetch.
