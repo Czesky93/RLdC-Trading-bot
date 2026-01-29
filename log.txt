@@ -1,0 +1,17 @@
+Projekt: RLdC Trading Bot - Ultimate AI
+
+Funkcje:
+- Flask portal z logowaniem, rejestracją i 2FA.
+- Integracja OAuth z Google (opcjonalna).
+- Moduły trading/AI (pozostałe entrypointy w README).
+
+Wykonane prace:
+- Usunięto twardo zakodowane sekrety i dodano konfigurację przez .env.
+- Dodano walidację wejść i bezpieczniejsze obsługiwanie błędów w auth.
+- Uzupełniono .env.example i zaktualizowano instrukcje uruchomienia.
+- Dodano prosty workflow CI (lint/test) oraz podstawowe testy smoke.
+
+Planowane:
+- Rozszerzyć testy integracyjne (OAuth, DB).
+- Dodać retry/backoff dla zewnętrznych API w modułach tradingowych.
+- Uporządkować konfigurację wielomodułową (spójny config manager).

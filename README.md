@@ -19,6 +19,16 @@ cd RLdC_Trading_Bot
 python installer.py
 ```
 
+## ⚙️ Konfiguracja środowiska
+1. Skopiuj przykładowy plik konfiguracyjny:
+```bash
+cp .env.example .env
+```
+2. Uzupełnij wymagane zmienne w `.env`:
+   - `SECRET_KEY` – silny klucz dla sesji Flask.
+   - `DATABASE_URL` – np. `sqlite:///rldc_trading_bot.db` lub URL bazy PostgreSQL.
+   - `GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET` – opcjonalnie dla logowania Google.
+
 ## 🌐 Dostęp do systemu
 🔹 **Futurystyczny Portal AI:** 🌐 `http://localhost:5004/`  
 🔹 **Konfiguracja AI i Strategii:** 🌐 `http://localhost:5003/`  
@@ -27,6 +37,7 @@ python installer.py
 
 ## 🚀 Uruchomienie ręczne
 ```bash
+export $(cat .env | xargs)
 python master_ai_trader.py &
 python web_portal.py &
 python ai_optimizer.py &
@@ -35,6 +46,11 @@ python demo_trading.py &
 python telegram_ai_bot.py &
 python zordon_ai.py &
 python ultimate_ai.py &
+```
+
+## ✅ Testy (smoke)
+```bash
+python -m pytest
 ```
 
 ## 🎯 Cel projektu

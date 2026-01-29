@@ -1,14 +1,29 @@
+import logging
 import os
-from flask import Flask, render_template, request, redirect, session
-from auth.security import register_user, login_user, db
-from auth.oauth import google_login, authorize
+
+from dotenv import load_dotenv
+from flask import Flask, render_template
+
+from auth.oauth import authorize, google_login, init_oauth
+from auth.security import db, login_user, register_user
 from auth.two_fa import generate_2fa, verify_2fa
 
+load_dotenv()
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@localhost/dbname'
-app.config['SECRET_KEY'] = 'supersecretkey'
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+    "DATABASE_URL", "sqlite:///rldc_trading_bot.db"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-only-change-me")
+
+if app.config["SECRET_KEY"] == "dev-only-change-me":
+    logging.warning(
+        "SECRET_KEY is not set. Use a strong secret in production via .env."
+    )
 
 db.init_app(app)
+init_oauth(app)
 
 @app.route("/")
 def home():
