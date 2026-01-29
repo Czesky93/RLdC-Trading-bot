@@ -1,5 +1,7 @@
+import logging
+
 import bcrypt
-from flask import Flask, request, jsonify, session
+from flask import request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -18,21 +20,37 @@ def check_password(password, hashed):
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
 def register_user():
-    data = request.json
-    hashed_password = hash_password(data['password'])
-    new_user = User(username=data['username'], email=data['email'], password_hash=hashed_password)
-    db.session.add(new_user)
-    db.session.commit()
+    data = request.json or {}
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+    if not username or not email or not password:
+        return jsonify({"error": "Missing username, email, or password"}), 400
+
+    hashed_password = hash_password(password)
+    new_user = User(username=username, email=email, password_hash=hashed_password)
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+    except Exception:
+        logging.exception("Failed to register user")
+        db.session.rollback()
+        return jsonify({"error": "Registration failed"}), 500
     return jsonify({"message": "User registered successfully"}), 201
 
 def login_user():
-    data = request.json
-    user = User.query.filter_by(username=data['username']).first()
+    data = request.json or {}
+    username = data.get("username")
+    password = data.get("password")
+    if not username or not password:
+        return jsonify({"error": "Missing username or password"}), 400
 
-    if user and check_password(data['password'], user.password_hash):
+    user = User.query.filter_by(username=username).first()
+
+    if user and check_password(password, user.password_hash):
         session['user'] = user.username
         return jsonify({"message": "Login successful"})
-    else:
+    if user:
         user.failed_attempts += 1
         db.session.commit()
-        return jsonify({"error": "Invalid credentials"}), 401
+    return jsonify({"error": "Invalid credentials"}), 401
