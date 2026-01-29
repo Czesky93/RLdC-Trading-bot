@@ -4,6 +4,8 @@ from datetime import datetime
 
 CONFIG_FILE = "config.json"
 FIRST_RUN_FILE = ".rldc_first_run"
+LOG_DIR = "logs"
+DIAGNOSTIC_LOG_FILE = os.path.join(LOG_DIR, "diagnostics.log")
 
 DEFAULT_CONFIG = {
     "AI_MODE": "hybrid",  # Opcje: "free", "paid", "hybrid"
@@ -34,12 +36,32 @@ def bootstrap_environment():
     """Konfiguruje środowisko przy pierwszym uruchomieniu i zwraca konfigurację."""
     config = load_config()
     if not os.path.exists(FIRST_RUN_FILE):
-        for directory in ("logs", "data"):
+        for directory in (LOG_DIR, "data"):
             os.makedirs(directory, exist_ok=True)
         with open(FIRST_RUN_FILE, "w", encoding="utf-8") as f:
             f.write(f"initialized_at={datetime.utcnow().isoformat()}Z\n")
         print("✅ Pierwsze uruchomienie: środowisko zostało skonfigurowane.")
     return config
+
+def diagnose_and_repair(error, context=""):
+    """Diagnozuje błąd i próbuje automatycznie naprawić podstawowe problemy."""
+    os.makedirs(LOG_DIR, exist_ok=True)
+    timestamp = datetime.utcnow().isoformat() + "Z"
+    with open(DIAGNOSTIC_LOG_FILE, "a", encoding="utf-8") as log_file:
+        log_file.write(f"[{timestamp}] context={context} error={error}\n")
+    if not os.path.exists(CONFIG_FILE):
+        save_config(DEFAULT_CONFIG)
+        return "✅ Naprawiono brakujący config.json."
+    config = load_config()
+    updated = False
+    for key, value in DEFAULT_CONFIG.items():
+        if key not in config:
+            config[key] = value
+            updated = True
+    if updated:
+        save_config(config)
+        return "✅ Uzupełniono brakujące wartości w config.json."
+    return "⚠️ Diagnostyka zakończona — brak automatycznych napraw."
 
 def save_config(new_config):
     """Zapisuje konfigurację do pliku."""

@@ -3,7 +3,7 @@ import subprocess
 import json
 import time
 
-from config_manager import bootstrap_environment, DEFAULT_CONFIG
+from config_manager import bootstrap_environment, diagnose_and_repair, DEFAULT_CONFIG
 
 CONFIG_FILE = "config.json"
 
@@ -56,7 +56,11 @@ def run_system():
     modules = ["master_ai_trader.py", "web_portal.py", "ai_optimizer.py", "rldc_quantum_ai.py", "demo_trading.py", "telegram_ai_bot.py", "zordon_ai.py", "ultimate_ai.py"]
     for module in modules:
         print(f"▶️ Uruchamianie {module}...")
-        subprocess.Popen(["python", module])
+        try:
+            subprocess.Popen(["python", module])
+        except Exception as error:
+            repair_status = diagnose_and_repair(error, context=f"start_module:{module}")
+            print(repair_status)
         time.sleep(2)
 
 def main():
