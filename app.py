@@ -5,8 +5,13 @@ from auth.oauth import google_login, authorize
 from auth.two_fa import generate_2fa, verify_2fa
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@localhost/dbname'
-app.config['SECRET_KEY'] = 'supersecretkey'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    "DATABASE_URL",
+    "postgresql://user:password@localhost/dbname",
+)
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 db.init_app(app)
 
