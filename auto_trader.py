@@ -7,6 +7,7 @@ from binance.client import Client
 from binance.exceptions import BinanceAPIException
 
 from trading.signal_engine import build_signal
+from trading.strategy_engine import RiskConfig, build_trade_plan
 
 CONFIG_FILE = "config.json"
 
@@ -65,39 +66,68 @@ def place_order(client, symbol, side, quantity, dry_run):
 def run_once(client, config):
     trading_rules = config.get("TRADING_RULES", {})
     auto_trading = config.get("AUTO_TRADING", {})
+    risk_cfg = config.get("RISK_MANAGEMENT", {})
 
     symbols = auto_trading.get("SYMBOLS", [])
     order_size_usdt = Decimal(str(auto_trading.get("ORDER_SIZE_USDT", 0)))
     max_slippage_pct = Decimal(str(auto_trading.get("MAX_SLIPPAGE_PCT", 0)))
     dry_run = bool(auto_trading.get("DRY_RUN", True))
+    use_trade_plan = bool(auto_trading.get("USE_TRADE_PLAN", False))
 
     if not symbols:
         raise ValueError("AUTO_TRADING.SYMBOLS jest puste.")
 
+    risk = RiskConfig(
+        risk_per_trade_pct=Decimal(str(risk_cfg.get("RISK_PER_TRADE_PCT", 1))),
+        max_position_pct=Decimal(str(risk_cfg.get("MAX_POSITION_PCT", 10))),
+        atr_period=int(risk_cfg.get("ATR_PERIOD", 14)),
+        atr_multiplier_sl=Decimal(str(risk_cfg.get("ATR_MULTIPLIER_SL", 1.5))),
+        atr_multiplier_tp=Decimal(str(risk_cfg.get("ATR_MULTIPLIER_TP", 3.0))),
+        min_signal_score=int(risk_cfg.get("MIN_SIGNAL_SCORE", 2)),
+    )
+
     for symbol in symbols:
         signal = build_signal(symbol, trading_rules.get("INTERVAL", "1m"), trading_rules)
-        print(
-            f"[{symbol}] action={signal.action} score={signal.score} price={signal.last_price} reasons={signal.reasons}"
-        )
+        plan = None
+        quote_asset = symbol[-4:] if symbol.endswith("USDT") else symbol[-3:]
+        available_quote = get_available_quote_balance(client, quote_asset)
+        if use_trade_plan:
+            plan = build_trade_plan(
+                symbol,
+                trading_rules.get("INTERVAL", "1m"),
+                trading_rules,
+                risk,
+                available_quote,
+            )
+            print(
+                f"[{symbol}] plan={plan.action} score={plan.score} order_usdt={plan.order_size_usdt} "
+                f"sl={plan.stop_loss} tp={plan.take_profit} reasons={plan.reasons}"
+            )
+        else:
+            print(
+                f"[{symbol}] action={signal.action} score={signal.score} price={signal.last_price} reasons={signal.reasons}"
+            )
 
-        if signal.action == "HOLD":
+        action = plan.action if plan else signal.action
+        if action == "HOLD":
             continue
 
         step_size, min_qty = get_symbol_filters(client, symbol)
         last_price = get_last_price(client, symbol)
 
-        quote_asset = symbol[-4:] if symbol.endswith("USDT") else symbol[-3:]
-        available_quote = get_available_quote_balance(client, quote_asset)
-
-        if signal.action == "BUY":
-            if order_size_usdt <= 0:
+        if action == "BUY":
+            if plan and plan.order_size_usdt > 0:
+                effective_order_size = plan.order_size_usdt
+            else:
+                effective_order_size = order_size_usdt
+            if effective_order_size <= 0:
                 raise ValueError("AUTO_TRADING.ORDER_SIZE_USDT musi być > 0.")
-            if available_quote < order_size_usdt:
+            if available_quote < effective_order_size:
                 print(f"[{symbol}] Brak wystarczających środków: {available_quote} {quote_asset}")
                 continue
 
             slippage_price = last_price * (Decimal("1") + max_slippage_pct / Decimal("100"))
-            quantity = order_size_usdt / slippage_price
+            quantity = effective_order_size / slippage_price
             quantity = quantize_qty(quantity, step_size)
 
             if quantity < min_qty:
@@ -107,7 +137,7 @@ def run_once(client, config):
             result = place_order(client, symbol, "BUY", quantity, dry_run)
             print(f"[{symbol}] BUY: {result}")
 
-        elif signal.action == "SELL":
+        elif action == "SELL":
             base_asset = symbol.replace(quote_asset, "")
             balance = client.get_asset_balance(asset=base_asset)
             available_base = Decimal(balance["free"]) if balance else Decimal("0")
