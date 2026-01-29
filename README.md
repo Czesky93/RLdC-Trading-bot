@@ -19,6 +19,8 @@ cd RLdC_Trading_Bot
 python installer.py
 ```
 
+📖 **Szczegółowa instrukcja uruchomienia na Ubuntu** znajduje się w `docs/SETUP_UBUNTU.md`.
+
 ## 🌐 Dostęp do systemu
 🔹 **Futurystyczny Portal AI:** 🌐 `http://localhost:5004/`  
 🔹 **Konfiguracja AI i Strategii:** 🌐 `http://localhost:5003/`  
