@@ -1,9 +1,25 @@
-import binance
+import json
+import os
 from binance.client import Client
 
-API_KEY = "your_api_key"
-API_SECRET = "your_api_secret"
+CONFIG_FILE = "config.json"
 
+def load_api_keys():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r", encoding="utf-8") as config_file:
+            config = json.load(config_file)
+        api_key = config.get("BINANCE_API_KEY")
+        api_secret = config.get("BINANCE_API_SECRET")
+    else:
+        api_key = os.getenv("BINANCE_API_KEY")
+        api_secret = os.getenv("BINANCE_API_SECRET")
+
+    if not api_key or not api_secret:
+        raise ValueError("Brak kluczy BINANCE_API_KEY/BINANCE_API_SECRET.")
+
+    return api_key, api_secret
+
+API_KEY, API_SECRET = load_api_keys()
 client = Client(API_KEY, API_SECRET)
 
 def place_order(symbol, quantity, order_type="MARKET", price=None, stop_price=None):
