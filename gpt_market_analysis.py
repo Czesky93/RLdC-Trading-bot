@@ -32,8 +32,7 @@ def analyze_market_with_gpt(market_data):
     )
 
     analysis = response["choices"][0]["message"]["content"]
-    print(f"📊 GPT-4 Turbo Analiza Rynkowa:
-{analysis}")
+    print(f"📊 GPT-4 Turbo Analiza Rynkowa:\n{analysis}")
     return analysis
 
 # Przykładowe testowanie

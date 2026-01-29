@@ -1,5 +1,6 @@
-import requests
 import json
+import os
+import requests
 import tweepy
 
 CONFIG_FILE = "config.json"
@@ -54,11 +55,9 @@ if __name__ == "__main__":
     for n in news:
         print(f"- {n}")
 
-    print("
-🐦 Ostatnie tweety:")
+    print("\n🐦 Ostatnie tweety:")
     for t in tweets:
         print(f"- {t}")
 
     sentiment = analyze_sentiment(news + tweets)
-    print(f"
-📊 Sentiment rynku: {sentiment}")
+    print(f"\n📊 Sentiment rynku: {sentiment}")

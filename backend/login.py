@@ -37,4 +37,4 @@ def some_protected_route():
     api_key = session["api_key"]
     api_secret = session["api_secret"]
     
-    return jsonify({"message": "Endpoint działa poprawnie z kluczami API"}))
+    return jsonify({"message": "Endpoint działa poprawnie z kluczami API"})
