@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RLdC Trading AiNalyzer Bot</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2rem; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #ddd; padding: 8px; }
+      th { background: #f5f5f5; }
+    </style>
+  </head>
+  <body>
+    <h1>RLdC Trading AiNalyzer Bot</h1>
+    <p>Minimalny panel MVP. Dane mają charakter informacyjny.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Para</th>
+          <th>Sygnał (1h)</th>
+          <th>Rationale</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in pairs %}
+        <tr>
+          <td>{{ item.pair }}</td>
+          <td>{{ item.signal.signal if item.signal else 'Brak danych' }}</td>
+          <td>{{ item.signal.rationale if item.signal else '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p>
+      <a href="/pairs">/pairs</a> | <a href="/analyze?pair=BTC/USDT">/analyze</a> |
+      <a href="/reports">/reports</a>
+    </p>
+  </body>
+</html>

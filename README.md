@@ -1,41 +1,71 @@
-# 🚀 RLdC Trading Bot - Ultimate AI
+# RLdC Trading AiNalyzer Bot v0.7.0-beta
 
-**Najbardziej zaawansowany bot tradingowy, który kiedykolwiek powstał.**  
-Zawiera Quantum AI, Deep RL, Blockchain Analysis, AI Predictive Trading i HFT.
+> **Uwaga:** To narzędzie służy do analizy rynku i edukacji. Nie stanowi porady inwestycyjnej. Handel wiąże się z ryzykiem i może prowadzić do strat.
 
-## 🌟 Funkcje
-✅ **AI Trading** - Autonomiczna sztuczna inteligencja przewidująca rynki  
-✅ **Quantum Optimization** - Kwantowa optymalizacja strategii handlowych  
-✅ **Ultimate AI** - AI Wizjoner przewidujący ruchy rynkowe i geopolityczne  
-✅ **High-Frequency Trading** - Ultra-szybkie algorytmy tradingowe  
-✅ **Blockchain Analysis** - Śledzenie transakcji i anomalii rynkowych  
-✅ **Telegram AI** - Sterowanie botem i analiza rynku z poziomu Telegrama  
-✅ **Futurystyczny Portal WWW** - Pełne zarządzanie AI z poziomu przeglądarki  
+## PL — Opis
+RLdC Trading AiNalyzer Bot to modularny projekt do pobierania danych OHLCV (read-only), liczenia wskaźników technicznych, generowania ostrożnych sygnałów oraz raportów. System ma wbudowany moduł samodoskonalenia przez propozycje poprawek, PR-y i testy.
 
-## 📦 Instalacja
+### Najważniejsze funkcje
+- Pobieranie OHLCV z giełdy (ccxt, tylko read-only).
+- SQLite jako lokalna baza danych + eksport CSV/Parquet.
+- Wskaźniki: RSI, MACD, Bollinger Bands, Ichimoku.
+- Sygnały BUY/SELL/WAIT z konserwatywnymi poziomami ryzyka.
+- Raporty JSON + opcjonalnie HTML.
+- Telegram bot + Web UI (FastAPI).
+- Scheduler (APScheduler).
+- Mechanizm self-improve: analiza logów i propozycje poprawek.
+
+## EN — Short description
+RLdC Trading AiNalyzer Bot is a modular Python project for read-only market data ingestion, indicator calculation, conservative signals, and reports. It includes Telegram, a lightweight web UI, and a safe self-improvement workflow via PRs.
+
+## Instalacja (uv)
 ```bash
-unzip RLdC_Trading_Bot_Installer.zip -d RLdC_Trading_Bot
-cd RLdC_Trading_Bot
-python installer.py
+./scripts/setup.sh
 ```
 
-## 🌐 Dostęp do systemu
-🔹 **Futurystyczny Portal AI:** 🌐 `http://localhost:5004/`  
-🔹 **Konfiguracja AI i Strategii:** 🌐 `http://localhost:5003/`  
-🔹 **Zordon AI (Interaktywna Wizja AI):** 🌐 `http://localhost:5005/`  
-🔹 **ULTIMATE AI (Przewidywanie przyszłości rynków):** 🌐 `http://localhost:5006/`  
+## Konfiguracja `.env`
+Projekt czyta sekrety z:
+1. `/home/oem/rldc_full_setup/config/.env`
+2. `.env` w katalogu projektu (fallback)
 
-## 🚀 Uruchomienie ręczne
-```bash
-python master_ai_trader.py &
-python web_portal.py &
-python ai_optimizer.py &
-python rldc_quantum_ai.py &
-python demo_trading.py &
-python telegram_ai_bot.py &
-python zordon_ai.py &
-python ultimate_ai.py &
+Przykładowa konfiguracja:
+```
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_CHAT_ID=...
+OPENAI_API_KEY=...
+GITHUB_TOKEN=...
+GITHUB_REPO=owner/repo
+RLDC_PAIRS=BTC/USDT,ETH/USDT
+RLDC_TIMEFRAMES=1m,15m,1h
 ```
 
-## 🎯 Cel projektu
-Zbudowanie **najpotężniejszej AI tradingowej na świecie** – przewidującej rynki, uczącej się, optymalizującej strategie i przekraczającej granice możliwości.  
+## Uruchomienie CLI
+```bash
+rldc --help
+rldc fetch --pair BTC/USDT --timeframe 1h
+rldc analyze --pair BTC/USDT --timeframe 1h
+rldc report --pair BTC/USDT --timeframe 1h --html
+rldc run
+```
+
+## Web UI
+```bash
+rldc web --host 0.0.0.0 --port 8000
+```
+
+## Telegram
+```bash
+rldc telegram
+```
+
+## Testy i lint
+```bash
+./scripts/test.sh
+./scripts/lint.sh
+```
+
+## Samodoskonalenie
+Bot nie modyfikuje kodu w locie. Moduł `self_improve` analizuje logi błędów i tworzy propozycje. PR-y mogą być tworzone tylko po przejściu testów i ręcznej akceptacji.
+
+## Log.txt
+Każdy eksport lub publikacja artefaktów powinna zawierać plik `log.txt` z opisem projektu, wykonanymi i planowanymi działaniami oraz znanymi błędami.

@@ -1,0 +1,20 @@
+RLdC Trading AiNalyzer Bot v0.7.0-beta
+
+Opis projektu:
+- Modularny bot analizy rynku (read-only), wskaźniki, sygnały, raporty, Telegram i Web UI.
+- Bezpieczny mechanizm samodoskonalenia przez PR-y po testach.
+
+Wykonane działania:
+- Utworzono strukturę repozytorium i moduły aplikacji.
+- Dodano SQLite storage, wskaźniki, sygnały i raporty.
+- Dodano CLI, Web UI, Telegram bot, scheduler.
+- Dodano testy, skrypty i CI.
+
+Planowane działania:
+- Rozszerzyć backtest o pełny PnL.
+- Dodać więcej wskaźników i lepsze reguły sygnałów.
+- Usprawnić self-improve (automatyczne PR w osobnej gałęzi po testach).
+
+Znane błędy i obejścia:
+- Jeśli brak danych OHLCV, uruchom: rldc fetch.
+- Jeśli brakuje tokenów API, bot działa w trybie offline (heurystycznym).
