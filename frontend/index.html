@@ -30,6 +30,16 @@
     <div class="content">
       <aside class="sidebar">
         <div class="panel">
+          <h3>Menu</h3>
+          <div class="menu">
+            <button class="menu-item is-active">Overview</button>
+            <button class="menu-item">Handel</button>
+            <button class="menu-item">Ryzyko</button>
+            <button class="menu-item">Alerty</button>
+            <button class="menu-item">Automatyzacje</button>
+          </div>
+        </div>
+        <div class="panel">
           <h3>Dashboard</h3>
           <div class="ticker" data-ticker>
             <div class="ticker-row"><span>BTC/USDT</span><span class="pos">+1.24%</span></div>
@@ -213,6 +223,173 @@
               <li><span class="legend-dot orange"></span>Futures</li>
             </ul>
             <button class="pill ghost full">Dostosuj ryzyko</button>
+          </div>
+        </section>
+
+        <section class="grid">
+          <div class="card wide settings">
+            <header>
+              <h3>Ustawienia strategii</h3>
+              <span class="badge">KONFIG</span>
+            </header>
+            <div class="settings-grid">
+              <div class="field">
+                <label for="market">Rynek</label>
+                <select id="market">
+                  <option>Spot</option>
+                  <option>Futures</option>
+                  <option>Margin</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="symbol">Para handlowa</label>
+                <input id="symbol" type="text" value="BTC/USDT" />
+              </div>
+              <div class="field">
+                <label for="timeframe">Interwał</label>
+                <select id="timeframe">
+                  <option>1m</option>
+                  <option>5m</option>
+                  <option selected>15m</option>
+                  <option>1h</option>
+                  <option>4h</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="strategy">Strategia</label>
+                <select id="strategy">
+                  <option>Momentum</option>
+                  <option>Mean Reversion</option>
+                  <option>Breakout</option>
+                  <option>AI Hybrid</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="position">Wielkość pozycji</label>
+                <input id="position" type="number" value="2.5" step="0.1" />
+              </div>
+              <div class="field">
+                <label for="leverage">Dźwignia</label>
+                <input id="leverage" type="number" value="5" min="1" max="50" />
+              </div>
+              <div class="field">
+                <label for="risk">Ryzyko na transakcję (%)</label>
+                <input id="risk" type="number" value="1.2" step="0.1" />
+              </div>
+              <div class="field">
+                <label for="max-dd">Maks. obsunięcie (%)</label>
+                <input id="max-dd" type="number" value="8" step="0.5" />
+              </div>
+              <div class="field">
+                <label for="stop-loss">Stop Loss (%)</label>
+                <input id="stop-loss" type="number" value="1.8" step="0.1" />
+              </div>
+              <div class="field">
+                <label for="take-profit">Take Profit (%)</label>
+                <input id="take-profit" type="number" value="3.2" step="0.1" />
+              </div>
+              <div class="field">
+                <label for="trailing">Trailing Stop (%)</label>
+                <input id="trailing" type="number" value="0.9" step="0.1" />
+              </div>
+              <div class="field">
+                <label for="order">Typ zlecenia</label>
+                <select id="order">
+                  <option>Market</option>
+                  <option selected>Limit</option>
+                  <option>Stop Limit</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="slippage">Max slippage (%)</label>
+                <input id="slippage" type="number" value="0.3" step="0.05" />
+              </div>
+              <div class="field">
+                <label for="volatility">Filtr zmienności</label>
+                <select id="volatility">
+                  <option>Wyłączony</option>
+                  <option selected>Standard</option>
+                  <option>Agresywny</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="volume">Min. wolumen (24h)</label>
+                <input id="volume" type="number" value="1000000" step="50000" />
+              </div>
+              <div class="field">
+                <label for="alerts">Alerty</label>
+                <select id="alerts">
+                  <option>Push</option>
+                  <option>Email</option>
+                  <option selected>Push + Email</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="ai-mode">Tryb AI</label>
+                <select id="ai-mode">
+                  <option>Konserwatywny</option>
+                  <option selected>Zrównoważony</option>
+                  <option>Agresywny</option>
+                </select>
+              </div>
+            </div>
+            <div class="settings-footer">
+              <button class="pill ghost">Resetuj</button>
+              <button class="pill">Zapisz ustawienia</button>
+            </div>
+          </div>
+          <div class="card">
+            <header>
+              <h3>Alerty</h3>
+              <span class="badge">LIVE</span>
+            </header>
+            <div class="signal-list">
+              <div class="signal">
+                <span class="dot green"></span>
+                <div>
+                  <strong>BTC przebija 47k</strong>
+                  <small>Push • teraz</small>
+                </div>
+                <span class="pos">+2.1%</span>
+              </div>
+              <div class="signal">
+                <span class="dot orange"></span>
+                <div>
+                  <strong>ETH spada poniżej MA50</strong>
+                  <small>Email • 3m temu</small>
+                </div>
+                <span class="neg">-0.6%</span>
+              </div>
+              <div class="signal">
+                <span class="dot lime"></span>
+                <div>
+                  <strong>SOL: zwiększony wolumen</strong>
+                  <small>Push • 10m temu</small>
+                </div>
+                <span class="pos">+0.9%</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <header>
+              <h3>Automatyzacje</h3>
+              <button class="mini">Edytuj</button>
+            </header>
+            <div class="stats">
+              <div>
+                <span>Rebalancing</span>
+                <strong>Co 4h</strong>
+              </div>
+              <div>
+                <span>Re-entry</span>
+                <strong>Aktywny</strong>
+              </div>
+              <div>
+                <span>Tryb nocny</span>
+                <strong>20:00-06:00</strong>
+              </div>
+            </div>
+            <button class="pill ghost full">Zmień harmonogram</button>
           </div>
         </section>
       </main>
