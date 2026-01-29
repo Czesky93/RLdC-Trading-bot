@@ -64,5 +64,4 @@ if __name__ == "__main__":
     print(f"📊 Najlepsze parametry strategii kwantowej: {best_params}")
 
     market_analysis = analyze_market_with_ai("BTC: $42,500, ETH: $3,200, S&P500: 4,150")
-    print(f"🧠 AI Market Analysis:
-{market_analysis}")
+    print(f"🧠 AI Market Analysis:\n{market_analysis}")

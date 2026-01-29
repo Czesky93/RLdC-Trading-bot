@@ -45,5 +45,4 @@ def analyze_trade_results(trade_history):
 if __name__ == "__main__":
     sample_trade_history = [{"pair": "BTCUSDT", "profit": -50, "strategy": "EMA"}, {"pair": "ETHUSDT", "profit": 120, "strategy": "AI"}]
     optimization_report = analyze_trade_results(sample_trade_history)
-    print(f"📊 AI Optymalizacja Strategii:
-{optimization_report}")
+    print(f"📊 AI Optymalizacja Strategii:\n{optimization_report}")

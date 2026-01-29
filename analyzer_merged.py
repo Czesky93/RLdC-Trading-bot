@@ -39,18 +39,6 @@ def indicators(symbol):
 if __name__ == '__main__':
     app.run(debug=True)
 
-app = Flask(__name__)
-app.secret_key = 'tajny_klucz'
-
-    klines = client.get_klines(symbol=symbol, interval=interval, limit=limit)
-    data = pd.DataFrame(klines, columns=[
-        'open_time', 'open', 'high', 'low', 'close', 'volume',
-        'close_time', 'quote_asset_volume', 'number_of_trades',
-        'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'
-    ])
-    data['close'] = data['close'].astype(float)
-    return data
-
 def generate_signals(data):
     # Generowanie prostych sygnałów kupna/sprzedaży na podstawie Bollinger Bands
     signals = []

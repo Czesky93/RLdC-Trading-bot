@@ -34,7 +34,6 @@ if __name__ == "__main__":
     for tx in eth_transactions:
         print(f"- Hash: {tx['hash']}, Wartość: {int(tx['value']) / 1e18} ETH")
 
-    print("
-📊 Statystyki Bitcoina:")
+    print("\n📊 Statystyki Bitcoina:")
     print(f"🚀 Cena: {btc_data['market_price_usd']} USD")
     print(f"⚡ Transakcje na sekundę: {btc_data['transactions_per_second']}")
