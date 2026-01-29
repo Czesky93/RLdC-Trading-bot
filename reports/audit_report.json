@@ -1,0 +1,214 @@
+{
+  "generated_at": "2026-01-29T22:38:24.392407+00:00",
+  "issues": [
+    {
+      "file": "config_manager.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "ai_code_auditor.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "ultimate_ai.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "rldc_quantum_ai.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "installer.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "news_watcher.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "blockchain_analysis.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "binance_trader.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "zordon_ai.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "telegram_bot.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "auto_trader.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "telegram_ai_bot.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "whale_tracker.py",
+      "type": "missing_imports",
+      "detail": [
+        "os"
+      ]
+    },
+    {
+      "file": "whale_tracker.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "web_portal.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "master_ai_trader.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "web_interface.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "gpt_market_analysis.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "ai_settings.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "ai_optimizer.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "demo_trading.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "rldc_manager.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "trading/binance_api.py",
+      "type": "missing_config_json",
+      "detail": "config.json referenced but not found in repo"
+    },
+    {
+      "file": "backend/notifications.py",
+      "type": "placeholder_tokens",
+      "detail": [
+        "your_email@example.com",
+        "your_password"
+      ]
+    },
+    {
+      "file": "auth/oauth.py",
+      "type": "placeholder_tokens",
+      "detail": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET"
+      ]
+    }
+  ],
+  "top_level_calls": [
+    {
+      "file": "app.py",
+      "calls": [
+        "db.init_app(app)"
+      ]
+    },
+    {
+      "file": "ai_automl.py",
+      "calls": [
+        "optimize_strategy('BTCUSDT')"
+      ]
+    },
+    {
+      "file": "news_watcher.py",
+      "calls": [
+        "auth.set_access_token(TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET)"
+      ]
+    },
+    {
+      "file": "ai_analyzer.py",
+      "calls": [
+        "print(f'📈 AI rekomenduje: {analyze_market()}')"
+      ]
+    },
+    {
+      "file": "trading_strategy.py",
+      "calls": [
+        "print(f'💰 Strategia EMA: {get_trading_signal()}')"
+      ]
+    },
+    {
+      "file": "telegram_ai_bot.py",
+      "calls": [
+        "bot.message_loop(handle_message)",
+        "print('✅ Telegram AI Bot działa!')",
+        "send_telegram_message('🚀 RLdC Trading Bot aktywowany!')"
+      ]
+    },
+    {
+      "file": "whale_tracker.py",
+      "calls": [
+        "track_whale_activity('BTCUSDT')"
+      ]
+    },
+    {
+      "file": "rldc_manager.py",
+      "calls": [
+        "os.makedirs(LOG_DIR, exist_ok=True)"
+      ]
+    },
+    {
+      "file": "rldc_analyzer_backend.py",
+      "calls": [
+        "os.makedirs(LOG_DIR, exist_ok=True)"
+      ]
+    },
+    {
+      "file": "modules/analysis/setup.py",
+      "calls": [
+        "setup(name='analysis_module', version='1.0.0', packages=find_packages(), entry_points={'console_scripts': ['analysis=analysis.analysis:analysis_function']})"
+      ]
+    },
+    {
+      "file": "modules/trading/setup.py",
+      "calls": [
+        "setup(name='trading_module', version='1.0.0', packages=find_packages(), entry_points={'console_scripts': ['trading=trading.trading:trading_function']})"
+      ]
+    },
+    {
+      "file": "modules/registration/setup.py",
+      "calls": [
+        "setup(name='registration_module', version='1.0.0', packages=find_packages(), entry_points={'console_scripts': ['registration=registration.registration:registration_function']})"
+      ]
+    }
+  ]
+}
