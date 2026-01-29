@@ -85,6 +85,29 @@ Wersja „all‑in‑one” jest uruchamiana przez `master_ai_trader.py`, ale wy
 python master_ai_trader.py
 ```
 
+### Telegram AI – panel sterowania botem
+
+Moduł `telegram_ai_bot.py` udostępnia panel sterowania w Telegramie z komendami do analizy rynku, podglądu sygnałów i uruchamiania auto-tradera.
+
+Wymagane pola w `config.json`:
+- `TELEGRAM_BOT_TOKEN`
+- `CHAT_ID`
+- `BINANCE_API_KEY`, `BINANCE_API_SECRET` (dla danych giełdowych i auto-tradera)
+
+Uruchomienie:
+
+```bash
+python telegram_ai_bot.py
+```
+
+Najważniejsze komendy:
+- `/status` – status bota i auto-tradingu
+- `/price SYMBOL` – kurs z Binance (np. `/price BTCUSDT`)
+- `/signal SYMBOL` – sygnał z realnych danych
+- `/rules` – aktywne warunki sygnału
+- `/autotrade on|off|status` – sterowanie auto-tradingiem
+- `/trade once` – jednorazowe wykonanie auto-tradera
+
 ### Automatyczny handel na podstawie realnych sygnałów
 
 Nowy moduł `auto_trader.py` pobiera **realne dane z giełdy Binance** (ceny, wolumeny, order book) i buduje sygnał w oparciu o **czytelne, konfigurowalne warunki** z `config.json`.
