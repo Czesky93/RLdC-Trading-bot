@@ -12,3 +12,13 @@ env/
 venv/
 node_modules/
 *.log
+.cache/
+.idea/
+out/
+tmp/
+debug.log
+*.bak
+.eslintcache
+coverage/
+build-*/
+dist-*/
