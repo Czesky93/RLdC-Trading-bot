@@ -22,3 +22,5 @@ debug.log
 coverage/
 build-*/
 dist-*/
+*.db
+trading_bot.db

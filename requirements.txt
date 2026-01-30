@@ -10,3 +10,8 @@ requests
 PyPDF2
 flask-session
 pytest
+fastapi
+uvicorn[standard]
+pydantic
+websockets
+python-binance
