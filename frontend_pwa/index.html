@@ -392,19 +392,19 @@
 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-value">$12,450</div>
+                        <div class="stat-value" id="totalBalance">$12,450</div>
                         <div class="stat-label">Total Balance</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">+15.3%</div>
+                        <div class="stat-value" id="profit24h">+15.3%</div>
                         <div class="stat-label">24h Profit</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">247</div>
+                        <div class="stat-value" id="activeTrades">247</div>
                         <div class="stat-label">Active Trades</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">98.7%</div>
+                        <div class="stat-value" id="successRate">98.7%</div>
                         <div class="stat-label">Success Rate</div>
                     </div>
                 </div>
@@ -448,47 +448,8 @@
                                     <th>Type</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="color: #ff0055;">42,150.50</td>
-                                    <td>0.5234</td>
-                                    <td>22,061.23</td>
-                                    <td style="color: #ff0055;">SELL</td>
-                                </tr>
-                                <tr>
-                                    <td style="color: #ff0055;">42,151.00</td>
-                                    <td>1.2340</td>
-                                    <td>52,014.33</td>
-                                    <td style="color: #ff0055;">SELL</td>
-                                </tr>
-                                <tr>
-                                    <td style="color: #ff0055;">42,152.25</td>
-                                    <td>0.8765</td>
-                                    <td>36,945.45</td>
-                                    <td style="color: #ff0055;">SELL</td>
-                                </tr>
-                                <tr style="background: rgba(0, 217, 255, 0.1);">
-                                    <td style="color: #00d9ff; font-weight: bold;">42,149.75</td>
-                                    <td colspan="3">CURRENT PRICE</td>
-                                </tr>
-                                <tr>
-                                    <td style="color: #00ff88;">42,148.50</td>
-                                    <td>0.9876</td>
-                                    <td>41,628.22</td>
-                                    <td style="color: #00ff88;">BUY</td>
-                                </tr>
-                                <tr>
-                                    <td style="color: #00ff88;">42,147.25</td>
-                                    <td>1.5432</td>
-                                    <td>65,038.45</td>
-                                    <td style="color: #00ff88;">BUY</td>
-                                </tr>
-                                <tr>
-                                    <td style="color: #00ff88;">42,146.00</td>
-                                    <td>2.1234</td>
-                                    <td>89,468.36</td>
-                                    <td style="color: #00ff88;">BUY</td>
-                                </tr>
+                            <tbody id="orderbookTable">
+                                <!-- Dynamic content -->
                             </tbody>
                         </table>
                     </div>
@@ -503,47 +464,8 @@
 
                 <div class="card">
                     <h3 class="card-title">Real-time Activity Log</h3>
-                    <div class="log-container">
-                        <div class="log-entry">
-                            <span class="log-time">[2026-01-30 08:03:04]</span>
-                            <span class="log-level log-info">INFO</span>
-                            <span>Quantum AI model initialized successfully</span>
-                        </div>
-                        <div class="log-entry">
-                            <span class="log-time">[2026-01-30 08:03:05]</span>
-                            <span class="log-level log-success">SUCCESS</span>
-                            <span>Connected to Binance WebSocket</span>
-                        </div>
-                        <div class="log-entry">
-                            <span class="log-time">[2026-01-30 08:03:07]</span>
-                            <span class="log-level log-info">INFO</span>
-                            <span>Market analysis started for BTC/USDT</span>
-                        </div>
-                        <div class="log-entry">
-                            <span class="log-time">[2026-01-30 08:03:12]</span>
-                            <span class="log-level log-success">SUCCESS</span>
-                            <span>Trade executed: BUY 0.5 BTC @ 42,149.75</span>
-                        </div>
-                        <div class="log-entry">
-                            <span class="log-time">[2026-01-30 08:03:15]</span>
-                            <span class="log-level log-info">INFO</span>
-                            <span>Deep RL model training iteration completed</span>
-                        </div>
-                        <div class="log-entry">
-                            <span class="log-time">[2026-01-30 08:03:18]</span>
-                            <span class="log-level log-warning">WARNING</span>
-                            <span>High volatility detected in ETH/USDT pair</span>
-                        </div>
-                        <div class="log-entry">
-                            <span class="log-time">[2026-01-30 08:03:22]</span>
-                            <span class="log-level log-info">INFO</span>
-                            <span>Portfolio rebalancing initiated</span>
-                        </div>
-                        <div class="log-entry">
-                            <span class="log-time">[2026-01-30 08:03:25]</span>
-                            <span class="log-level log-success">SUCCESS</span>
-                            <span>Risk management rules updated</span>
-                        </div>
+                    <div class="log-container" id="logsContainer">
+                        <!-- Dynamic content -->
                     </div>
                 </div>
             </div>
@@ -554,66 +476,8 @@
                     <h1 class="view-title">Trading Modules</h1>
                 </div>
 
-                <div class="modules-grid">
-                    <div class="module-card">
-                        <div class="module-header">
-                            <div class="module-name">Quantum AI</div>
-                            <span class="module-status status-active">Active</span>
-                        </div>
-                        <div class="card-content">
-                            <p>Quantum-optimized trading strategies using advanced machine learning algorithms.</p>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-header">
-                            <div class="module-name">Deep RL Trader</div>
-                            <span class="module-status status-active">Active</span>
-                        </div>
-                        <div class="card-content">
-                            <p>Deep Reinforcement Learning model for autonomous trading decisions.</p>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-header">
-                            <div class="module-name">HFT Engine</div>
-                            <span class="module-status status-active">Active</span>
-                        </div>
-                        <div class="card-content">
-                            <p>High-Frequency Trading engine for ultra-fast order execution.</p>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-header">
-                            <div class="module-name">Blockchain Analyzer</div>
-                            <span class="module-status status-active">Active</span>
-                        </div>
-                        <div class="card-content">
-                            <p>Real-time blockchain analysis and anomaly detection system.</p>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-header">
-                            <div class="module-name">Risk Manager</div>
-                            <span class="module-status status-active">Active</span>
-                        </div>
-                        <div class="card-content">
-                            <p>Advanced risk management and portfolio protection mechanisms.</p>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-header">
-                            <div class="module-name">News Watcher</div>
-                            <span class="module-status status-inactive">Inactive</span>
-                        </div>
-                        <div class="card-content">
-                            <p>Sentiment analysis from news sources and social media feeds.</p>
-                        </div>
-                    </div>
+                <div class="modules-grid" id="modulesContainer">
+                    <!-- Dynamic content -->
                 </div>
             </div>
 
@@ -628,11 +492,11 @@
                         <h3>API Configuration</h3>
                         <div class="form-group">
                             <label class="form-label">API Key</label>
-                            <input type="text" class="form-input" placeholder="Enter your API key" autocomplete="off">
+                            <input type="text" id="apiKey" class="form-input" placeholder="Enter your API key" autocomplete="off">
                         </div>
                         <div class="form-group">
                             <label class="form-label">API Secret</label>
-                            <input type="password" class="form-input" placeholder="Enter your API secret" autocomplete="off">
+                            <input type="password" id="apiSecret" class="form-input" placeholder="Enter your API secret" autocomplete="off">
                         </div>
                     </div>
 
@@ -640,15 +504,15 @@
                         <h3>Trading Parameters</h3>
                         <div class="form-group">
                             <label class="form-label">Maximum Trade Size (BTC)</label>
-                            <input type="number" class="form-input" value="0.5" step="0.01">
+                            <input type="number" id="maxTradeSize" class="form-input" value="0.5" step="0.01">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Stop Loss (%)</label>
-                            <input type="number" class="form-input" value="2.0" step="0.1">
+                            <input type="number" id="stopLoss" class="form-input" value="2.0" step="0.1">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Take Profit (%)</label>
-                            <input type="number" class="form-input" value="5.0" step="0.1">
+                            <input type="number" id="takeProfit" class="form-input" value="5.0" step="0.1">
                         </div>
                     </div>
 
@@ -656,32 +520,348 @@
                         <h3>AI Model Settings</h3>
                         <div class="form-group">
                             <label class="form-label">Learning Rate</label>
-                            <input type="number" class="form-input" value="0.001" step="0.0001">
+                            <input type="number" id="learningRate" class="form-input" value="0.001" step="0.0001">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Training Iterations</label>
-                            <input type="number" class="form-input" value="1000" step="100">
+                            <input type="number" id="trainingIterations" class="form-input" value="1000" step="100">
                         </div>
                     </div>
 
-                    <button class="btn">Save Settings</button>
+                    <button class="btn" id="saveSettingsBtn">Save Settings</button>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
+        // State management
+        const AppState = {
+            settings: {
+                apiKey: '',
+                apiSecret: '',
+                maxTradeSize: 0.5,
+                stopLoss: 2.0,
+                takeProfit: 5.0,
+                learningRate: 0.001,
+                trainingIterations: 1000
+            },
+            dashboard: {
+                balance: 12450,
+                profit: 15.3,
+                trades: 247,
+                successRate: 98.7
+            },
+            modules: [
+                { name: 'Quantum AI', status: 'active', description: 'Quantum-optimized trading strategies using advanced machine learning algorithms.' },
+                { name: 'Deep RL Trader', status: 'active', description: 'Deep Reinforcement Learning model for autonomous trading decisions.' },
+                { name: 'HFT Engine', status: 'active', description: 'High-Frequency Trading engine for ultra-fast order execution.' },
+                { name: 'Blockchain Analyzer', status: 'active', description: 'Real-time blockchain analysis and anomaly detection system.' },
+                { name: 'Risk Manager', status: 'active', description: 'Advanced risk management and portfolio protection mechanisms.' },
+                { name: 'News Watcher', status: 'inactive', description: 'Sentiment analysis from news sources and social media feeds.' }
+            ],
+            logs: [],
+            orderbook: {
+                bids: [],
+                asks: [],
+                currentPrice: 42149.75
+            }
+        };
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('rldc_settings');
+            if (saved) {
+                AppState.settings = { ...AppState.settings, ...JSON.parse(saved) };
+                updateSettingsForm();
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('rldc_settings', JSON.stringify(AppState.settings));
+            addLog('success', 'Settings saved successfully');
+            showNotification('Settings saved!', 'success');
+        }
+
+        // Update settings form with current values
+        function updateSettingsForm() {
+            document.getElementById('apiKey').value = AppState.settings.apiKey;
+            document.getElementById('apiSecret').value = AppState.settings.apiSecret;
+            document.getElementById('maxTradeSize').value = AppState.settings.maxTradeSize;
+            document.getElementById('stopLoss').value = AppState.settings.stopLoss;
+            document.getElementById('takeProfit').value = AppState.settings.takeProfit;
+            document.getElementById('learningRate').value = AppState.settings.learningRate;
+            document.getElementById('trainingIterations').value = AppState.settings.trainingIterations;
+        }
+
+        // Add log entry
+        function addLog(level, message) {
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0, 19).replace('T', ' ');
+            AppState.logs.unshift({ timestamp, level, message });
+            if (AppState.logs.length > 50) AppState.logs.pop();
+            updateLogsView();
+        }
+
+        // Update logs view
+        function updateLogsView() {
+            const container = document.getElementById('logsContainer');
+            container.innerHTML = AppState.logs.map(log => `
+                <div class="log-entry">
+                    <span class="log-time">[${log.timestamp}]</span>
+                    <span class="log-level log-${log.level}">${log.level.toUpperCase()}</span>
+                    <span>${log.message}</span>
+                </div>
+            `).join('');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#00ff88' : type === 'error' ? '#ff0055' : '#00d9ff'};
+                color: #1a1a2e;
+                padding: 15px 25px;
+                border-radius: 5px;
+                font-weight: bold;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Fetch Binance market data
+        async function fetchMarketData() {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+                const data = await response.json();
+                
+                // Update dashboard with real data
+                AppState.dashboard.balance = parseFloat(data.lastPrice) * 0.295;
+                const priceChange = parseFloat(data.priceChangePercent);
+                AppState.dashboard.profit = priceChange;
+                
+                updateDashboard();
+                addLog('info', `Market data updated: BTC/USDT ${data.lastPrice}`);
+            } catch (error) {
+                console.error('Failed to fetch market data:', error);
+                // Use simulated data when API is unavailable
+                simulateMarketData();
+            }
+        }
+
+        // Simulate market data when API is unavailable
+        function simulateMarketData() {
+            const priceChange = (Math.random() - 0.5) * 5; // Random change between -2.5% and +2.5%
+            AppState.dashboard.balance += AppState.dashboard.balance * (priceChange / 100);
+            AppState.dashboard.profit = (AppState.dashboard.profit + priceChange / 10).toFixed(1);
+            
+            updateDashboard();
+            addLog('info', `Simulated market update: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}% change`);
+        }
+
+        // Fetch orderbook data
+        async function fetchOrderbook() {
+            try {
+                const response = await fetch('https://api.binance.com/api/3/depth?symbol=BTCUSDT&limit=10');
+                const data = await response.json();
+                
+                AppState.orderbook.bids = data.bids.slice(0, 3);
+                AppState.orderbook.asks = data.asks.slice(0, 3);
+                AppState.orderbook.currentPrice = (parseFloat(data.bids[0][0]) + parseFloat(data.asks[0][0])) / 2;
+                
+                updateOrderbook();
+            } catch (error) {
+                console.error('Failed to fetch orderbook:', error);
+                // Use simulated data when API is unavailable
+                simulateOrderbook();
+            }
+        }
+
+        // Simulate orderbook when API is unavailable
+        function simulateOrderbook() {
+            const basePrice = AppState.orderbook.currentPrice;
+            const spread = basePrice * 0.0001; // 0.01% spread
+            
+            // Generate simulated asks (sells)
+            AppState.orderbook.asks = [];
+            for (let i = 0; i < 3; i++) {
+                const price = basePrice + spread * (i + 1);
+                const amount = (Math.random() * 2).toFixed(4);
+                AppState.orderbook.asks.push([price.toFixed(2), amount]);
+            }
+            
+            // Generate simulated bids (buys)
+            AppState.orderbook.bids = [];
+            for (let i = 0; i < 3; i++) {
+                const price = basePrice - spread * (i + 1);
+                const amount = (Math.random() * 2).toFixed(4);
+                AppState.orderbook.bids.push([price.toFixed(2), amount]);
+            }
+            
+            // Slightly adjust current price
+            AppState.orderbook.currentPrice += (Math.random() - 0.5) * 10;
+            
+            updateOrderbook();
+        }
+
+        // Update dashboard display
+        function updateDashboard() {
+            document.getElementById('totalBalance').textContent = `$${AppState.dashboard.balance.toFixed(2).toLocaleString()}`;
+            document.getElementById('profit24h').textContent = `${AppState.dashboard.profit > 0 ? '+' : ''}${AppState.dashboard.profit.toFixed(1)}%`;
+            document.getElementById('activeTrades').textContent = AppState.dashboard.trades;
+            document.getElementById('successRate').textContent = `${AppState.dashboard.successRate}%`;
+        }
+
+        // Update orderbook display
+        function updateOrderbook() {
+            const tbody = document.getElementById('orderbookTable');
+            let html = '';
+            
+            // Add asks (sells) in reverse order
+            for (let i = AppState.orderbook.asks.length - 1; i >= 0; i--) {
+                const [price, amount] = AppState.orderbook.asks[i];
+                const total = parseFloat(price) * parseFloat(amount);
+                html += `
+                    <tr>
+                        <td style="color: #ff0055;">${parseFloat(price).toFixed(2)}</td>
+                        <td>${parseFloat(amount).toFixed(4)}</td>
+                        <td>${total.toFixed(2)}</td>
+                        <td style="color: #ff0055;">SELL</td>
+                    </tr>
+                `;
+            }
+            
+            // Current price row
+            html += `
+                <tr style="background: rgba(0, 217, 255, 0.1);">
+                    <td style="color: #00d9ff; font-weight: bold;">${AppState.orderbook.currentPrice.toFixed(2)}</td>
+                    <td colspan="3">CURRENT PRICE</td>
+                </tr>
+            `;
+            
+            // Add bids (buys)
+            for (let i = 0; i < AppState.orderbook.bids.length; i++) {
+                const [price, amount] = AppState.orderbook.bids[i];
+                const total = parseFloat(price) * parseFloat(amount);
+                html += `
+                    <tr>
+                        <td style="color: #00ff88;">${parseFloat(price).toFixed(2)}</td>
+                        <td>${parseFloat(amount).toFixed(4)}</td>
+                        <td>${total.toFixed(2)}</td>
+                        <td style="color: #00ff88;">BUY</td>
+                    </tr>
+                `;
+            }
+            
+            tbody.innerHTML = html;
+        }
+
+        // Toggle module status
+        function toggleModule(index) {
+            const module = AppState.modules[index];
+            module.status = module.status === 'active' ? 'inactive' : 'active';
+            updateModules();
+            addLog('info', `Module ${module.name} ${module.status === 'active' ? 'activated' : 'deactivated'}`);
+            showNotification(`${module.name} ${module.status === 'active' ? 'activated' : 'deactivated'}`, module.status === 'active' ? 'success' : 'info');
+        }
+
+        // Update modules display
+        function updateModules() {
+            const container = document.getElementById('modulesContainer');
+            container.innerHTML = AppState.modules.map((module, index) => `
+                <div class="module-card" onclick="toggleModule(${index})" style="cursor: pointer;">
+                    <div class="module-header">
+                        <div class="module-name">${module.name}</div>
+                        <span class="module-status status-${module.status}">${module.status === 'active' ? 'Active' : 'Inactive'}</span>
+                    </div>
+                    <div class="card-content">
+                        <p>${module.description}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Simulate trading activity
+        function simulateTradingActivity() {
+            const activities = [
+                { level: 'info', msg: 'Quantum AI model analyzing market patterns' },
+                { level: 'success', msg: 'Trade executed: BUY 0.25 BTC @ ' + AppState.orderbook.currentPrice.toFixed(2) },
+                { level: 'info', msg: 'Deep RL model training iteration completed' },
+                { level: 'success', msg: 'Portfolio rebalancing completed' },
+                { level: 'warning', msg: 'High volatility detected in market' },
+                { level: 'info', msg: 'Risk management rules updated' },
+                { level: 'success', msg: 'Connected to Binance WebSocket' }
+            ];
+            
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            addLog(activity.level, activity.msg);
+            
+            // Randomly update trades count
+            if (Math.random() > 0.7) {
+                AppState.dashboard.trades += Math.floor(Math.random() * 3);
+                updateDashboard();
+            }
+        }
+
         // Navigation handling
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function() {
-                // Remove active class from all nav items and views
                 document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
                 document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
                 
-                // Add active class to clicked item and corresponding view
                 this.classList.add('active');
                 const viewId = this.getAttribute('data-view');
                 document.getElementById(viewId).classList.add('active');
+                
+                // Load data when switching views
+                if (viewId === 'orderbook') {
+                    fetchOrderbook();
+                } else if (viewId === 'dashboard') {
+                    fetchMarketData();
+                }
+            });
+        });
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            updateModules();
+            
+            // Initial logs
+            addLog('info', 'RLdC Portal initialized successfully');
+            addLog('success', 'Connected to trading engine');
+            addLog('info', 'Loading market data...');
+            
+            // Fetch initial data
+            fetchMarketData();
+            fetchOrderbook();
+            
+            // Update data periodically
+            setInterval(fetchMarketData, 30000); // Every 30 seconds
+            setInterval(fetchOrderbook, 10000); // Every 10 seconds
+            setInterval(simulateTradingActivity, 5000); // Every 5 seconds
+            
+            // Settings form handler
+            document.getElementById('saveSettingsBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                AppState.settings.apiKey = document.getElementById('apiKey').value;
+                AppState.settings.apiSecret = document.getElementById('apiSecret').value;
+                AppState.settings.maxTradeSize = parseFloat(document.getElementById('maxTradeSize').value);
+                AppState.settings.stopLoss = parseFloat(document.getElementById('stopLoss').value);
+                AppState.settings.takeProfit = parseFloat(document.getElementById('takeProfit').value);
+                AppState.settings.learningRate = parseFloat(document.getElementById('learningRate').value);
+                AppState.settings.trainingIterations = parseInt(document.getElementById('trainingIterations').value);
+                saveSettings();
             });
         });
 
@@ -691,9 +871,11 @@
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => {
                         console.log('Service Worker registered successfully:', registration.scope);
+                        addLog('success', 'Service Worker registered successfully');
                     })
                     .catch(error => {
                         console.log('Service Worker registration failed:', error);
+                        addLog('error', 'Service Worker registration failed');
                     });
             });
         }
@@ -705,6 +887,20 @@
             deferredPrompt = e;
             console.log('PWA install prompt available');
         });
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
