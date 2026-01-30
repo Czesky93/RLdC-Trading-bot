@@ -22,3 +22,11 @@ debug.log
 coverage/
 build-*/
 dist-*/
+.pytest_cache/
+.rldc_first_run
+logs/
+data/*.csv
+market_data_*.csv
+*.db
+*.sqlite
+*.sqlite3
