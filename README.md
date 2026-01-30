@@ -11,6 +11,7 @@ Zawiera Quantum AI, Deep RL, Blockchain Analysis, AI Predictive Trading i HFT.
 ✅ **Blockchain Analysis** - Śledzenie transakcji i anomalii rynkowych  
 ✅ **Telegram AI** - Sterowanie botem i analiza rynku z poziomu Telegrama  
 ✅ **Futurystyczny Portal WWW** - Pełne zarządzanie AI z poziomu przeglądarki  
+✅ **FastAPI Gateway** - REST API i WebSocket dla integracji z Binance Futures  
 
 ## 📦 Instalacja
 ```bash
@@ -26,6 +27,7 @@ python installer.py
 🔹 **Konfiguracja AI i Strategii:** 🌐 `http://localhost:5003/`  
 🔹 **Zordon AI (Interaktywna Wizja AI):** 🌐 `http://localhost:5005/`  
 🔹 **ULTIMATE AI (Przewidywanie przyszłości rynków):** 🌐 `http://localhost:5006/`  
+🔹 **FastAPI Gateway (REST API & WebSocket):** 🌐 `http://localhost:8000/` | [Docs](http://localhost:8000/docs)  
 
 ## 🚀 Uruchomienie ręczne
 ```bash
@@ -37,7 +39,27 @@ python demo_trading.py &
 python telegram_ai_bot.py &
 python zordon_ai.py &
 python ultimate_ai.py &
+python gateway_server.py &  # FastAPI Gateway
 ```
+
+## 🔌 FastAPI Gateway Server
+Nowy serwer Gateway zapewnia REST API i WebSocket dla integracji z Binance Futures.
+
+**Szybki start:**
+```bash
+python start_gateway.py
+# lub
+python gateway_server.py
+```
+
+**Dokumentacja:** Zobacz [GATEWAY_README.md](GATEWAY_README.md) dla pełnej dokumentacji API.
+
+**Główne endpointy:**
+- `GET /status` - Status bota (balance, equity, PnL)
+- `GET /positions` - Lista otwartych pozycji
+- `POST /trade/quick` - Szybkie wykonanie transakcji
+- `POST /bot/start|pause|stop` - Kontrola bota
+- `WebSocket /ws` - Aktualizacje w czasie rzeczywistym
 
 ## 🎯 Cel projektu
 Zbudowanie **najpotężniejszej AI tradingowej na świecie** – przewidującej rynki, uczącej się, optymalizującej strategie i przekraczającej granice możliwości.  
