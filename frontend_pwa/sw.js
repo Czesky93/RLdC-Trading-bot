@@ -2,8 +2,7 @@
 const CACHE_NAME = 'rldc-portal-v1';
 const urlsToCache = [
   'index.html',
-  'manifest.webmanifest',
-  'sw.js'
+  'manifest.webmanifest'
 ];
 
 // Install event - cache files
@@ -62,7 +61,7 @@ self.addEventListener('fetch', (event) => {
         // Fetch from network
         return fetch(fetchRequest).then((response) => {
           // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+          if (!response || response.status !== 200 || response.type === 'error') {
             return response;
           }
 
