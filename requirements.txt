@@ -10,3 +10,6 @@ requests
 PyPDF2
 flask-session
 pytest
+fastapi
+uvicorn[standard]
+websockets
