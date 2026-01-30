@@ -22,3 +22,7 @@ debug.log
 coverage/
 build-*/
 dist-*/
+config.json
+bot_config.json
+trading_bot.db
+*.db

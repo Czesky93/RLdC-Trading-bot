@@ -22,12 +22,39 @@ python installer.py
 📖 **Szczegółowa instrukcja uruchomienia na Ubuntu** znajduje się w `docs/SETUP_UBUNTU.md`.
 
 ## 🌐 Dostęp do systemu
+🔹 **FastAPI Gateway Server:** 🌐 `http://localhost:8000/` (REST API + WebSocket)  
+🔹 **API Documentation:** 🌐 `http://localhost:8000/docs` (Swagger UI)  
 🔹 **Futurystyczny Portal AI:** 🌐 `http://localhost:5004/`  
 🔹 **Konfiguracja AI i Strategii:** 🌐 `http://localhost:5003/`  
 🔹 **Zordon AI (Interaktywna Wizja AI):** 🌐 `http://localhost:5005/`  
 🔹 **ULTIMATE AI (Przewidywanie przyszłości rynków):** 🌐 `http://localhost:5006/`  
 
 ## 🚀 Uruchomienie ręczne
+
+### FastAPI Gateway Server (Recommended)
+```bash
+# Uruchom serwer FastAPI Gateway
+uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Lub w trybie reload (development)
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**API Endpoints:**
+- `GET /status` - Status bota i konta
+- `GET /positions` - Otwarte pozycje
+- `POST /positions/{id}/close` - Zamknij pozycję
+- `POST /positions/{id}/modify` - Modyfikuj SL/TP
+- `GET /trades/history` - Historia transakcji
+- `GET /equity?range=1D` - Dane equity (1H, 4H, 1D, 1W, 1M)
+- `POST /bot/start` - Start bota
+- `POST /bot/pause` - Pauza bota
+- `POST /bot/stop` - Stop bota
+- `POST /config/update` - Aktualizuj konfigurację
+- `POST /trade/quick` - Szybka transakcja
+- `WS /ws` - WebSocket dla real-time updates
+
+### Inne moduły AI
 ```bash
 python master_ai_trader.py &
 python web_portal.py &
