@@ -85,6 +85,7 @@ def verify_installation():
     """Sprawdza poprawność działania wszystkich modułów"""
     print("🔍 Weryfikacja instalacji...")
     modules = [
+        "main.py",  # FastAPI Gateway
         "master_ai_trader.py",
         "web_portal.py",
         "ai_optimizer.py",
