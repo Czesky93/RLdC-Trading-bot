@@ -59,6 +59,31 @@ Następnie uzupełnij **realne** klucze/parametry (pliku `config.json` używa wi
 
 ## Uruchamianie kluczowych modułów
 
+### FastAPI Gateway (REST API + WebSocket)
+
+**NOWE!** Główna bramka API z obsługą REST i WebSocket:
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+Domyślny adres: `http://localhost:8000/`  
+Dokumentacja API (Swagger): `http://localhost:8000/docs`
+
+Dostępne endpointy:
+- `GET /status` - Status bota i aktualny stan
+- `GET /positions` - Lista aktywnych pozycji
+- `GET /trades/history` - Historia zamkniętych transakcji
+- `GET /equity?range=1D` - Historia equity (1H, 4H, 1D, 1W, 1M)
+- `POST /positions/{id}/close` - Zamknięcie pozycji
+- `POST /positions/{id}/modify` - Modyfikacja SL/TP
+- `POST /bot/start` - Uruchomienie bota
+- `POST /bot/pause` - Wstrzymanie bota
+- `POST /bot/stop` - Zatrzymanie bota
+- `POST /config/update` - Aktualizacja konfiguracji
+- `POST /trade/quick` - Szybkie otwarcie pozycji
+- `WebSocket /ws` - Real-time updates (ticki, pozycje, alerty)
+
 ### Portal WWW (Flask)
 
 ```bash
