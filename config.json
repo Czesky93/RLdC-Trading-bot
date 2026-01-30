@@ -1,0 +1,39 @@
+{
+    "AI_MODE": "hybrid",
+    "USE_FREE_AI": true,
+    "USE_PAID_AI": true,
+    "START_BALANCE": 2000,
+    "STOP_LOSS": 0.02,
+    "TAKE_PROFIT": 0.05,
+    "TELEGRAM_BOT_TOKEN": "",
+    "CHAT_ID": "",
+    "BINANCE_API_KEY": "",
+    "BINANCE_API_SECRET": "",
+    "ETHERSCAN_API_KEY": "",
+    "ETHEREUM_TRACK_ADDRESS": "",
+    "NEWS_API_KEY": "",
+    "OPENAI_API_KEY": "",
+    "TRADING_RULES": {
+        "INTERVAL": "1m",
+        "FAST_SMA": 9,
+        "SLOW_SMA": 21,
+        "RSI_PERIOD": 14,
+        "RSI_BUY_MIN": 50,
+        "RSI_BUY_MAX": 70,
+        "RSI_SELL_MIN": 30,
+        "RSI_SELL_MAX": 50,
+        "ORDERBOOK_IMBALANCE_BUY": 0.1,
+        "ORDERBOOK_IMBALANCE_SELL": -0.1,
+        "VOLUME_SPIKE_MULTIPLIER": 1.5,
+        "MIN_SIGNAL_SCORE": 2
+    },
+    "AUTO_TRADING": {
+        "SYMBOLS": [
+            "BTCUSDT"
+        ],
+        "ORDER_SIZE_USDT": 25,
+        "MAX_SLIPPAGE_PCT": 0.2,
+        "DRY_RUN": true,
+        "LOOP_SECONDS": 60
+    }
+}
