@@ -6,6 +6,7 @@ Provides REST API and WebSocket endpoints for trading bot management
 import asyncio
 import json
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Query
@@ -14,17 +15,6 @@ from pydantic import BaseModel
 import sqlite3
 from contextlib import contextmanager
 
-# Initialize FastAPI app
-app = FastAPI(title="RLdC Trading Bot API", version="1.0.0")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Database configuration
 DB_FILE = "trading_bot.db"
@@ -176,6 +166,64 @@ class BinanceFuturesClient:
 
 
 binance_client = BinanceFuturesClient()
+
+
+# Background task to simulate market data updates
+async def market_data_updater():
+    """Background task to update market data and broadcast to WebSocket clients"""
+    while True:
+        await asyncio.sleep(5)  # Update every 5 seconds
+        
+        if websocket_clients:
+            # Get current positions and update prices
+            positions = get_positions_from_db()
+            
+            for position in positions:
+                current_price = await binance_client.get_price(position["symbol"])
+                
+                # Broadcast price update
+                await broadcast_to_websockets({
+                    "type": "price_update",
+                    "symbol": position["symbol"],
+                    "price": current_price,
+                    "timestamp": datetime.now().isoformat()
+                })
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler"""
+    # Startup
+    init_db()
+    
+    # Start background task for market data updates
+    task = asyncio.create_task(market_data_updater())
+    
+    print("✅ RLdC Trading Bot API started successfully")
+    print("📡 WebSocket endpoint available at: ws://0.0.0.0:8000/ws")
+    print("📊 API documentation available at: http://0.0.0.0:8000/docs")
+    
+    yield
+    
+    # Shutdown
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+
+# Initialize FastAPI app with lifespan
+app = FastAPI(title="RLdC Trading Bot API", version="1.0.0", lifespan=lifespan)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Helper functions
@@ -459,16 +507,17 @@ async def get_trades_history(limit: int = Query(100, ge=1, le=1000)):
 
 
 @app.get("/equity")
-async def get_equity(range: str = Query("1D", regex="^(1H|4H|1D|1W|1M)$")):
+async def get_equity(range: str = Query("1D", pattern="^(1H|4H|1D|1W|1M)$")):
     """Get equity data for specified time range"""
     equity_points = get_equity_data_from_db(range)
     
     # If no data, create some sample data
     if not equity_points:
         # Add some mock equity data
+        from builtins import range as range_func
         now = datetime.now()
         equity_points = []
-        for i in range(20):
+        for i in range_func(20):
             equity_points.append({
                 "timestamp": (now - timedelta(hours=i)).isoformat(),
                 "equity": 10000 + (i * 50),
@@ -651,41 +700,6 @@ async def websocket_endpoint(websocket: WebSocket):
     finally:
         if websocket in websocket_clients:
             websocket_clients.remove(websocket)
-
-
-# Background task to simulate market data updates
-async def market_data_updater():
-    """Background task to update market data and broadcast to WebSocket clients"""
-    while True:
-        await asyncio.sleep(5)  # Update every 5 seconds
-        
-        if websocket_clients:
-            # Get current positions and update prices
-            positions = get_positions_from_db()
-            
-            for position in positions:
-                current_price = await binance_client.get_price(position["symbol"])
-                
-                # Broadcast price update
-                await broadcast_to_websockets({
-                    "type": "price_update",
-                    "symbol": position["symbol"],
-                    "price": current_price,
-                    "timestamp": datetime.now().isoformat()
-                })
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize on startup"""
-    init_db()
-    
-    # Start background task for market data updates
-    asyncio.create_task(market_data_updater())
-    
-    print("✅ RLdC Trading Bot API started successfully")
-    print("📡 WebSocket endpoint available at: ws://0.0.0.0:8000/ws")
-    print("📊 API documentation available at: http://0.0.0.0:8000/docs")
 
 
 if __name__ == "__main__":
