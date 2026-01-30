@@ -363,6 +363,10 @@
                     <span class="nav-icon">📊</span>
                     <span>Dashboard</span>
                 </li>
+                <li class="nav-item" data-view="account">
+                    <span class="nav-icon">💰</span>
+                    <span>Account</span>
+                </li>
                 <li class="nav-item" data-view="orderbook">
                     <span class="nav-icon">📈</span>
                     <span>Orderbook</span>
@@ -426,6 +430,81 @@
                             <li>High-Frequency Trading - Active</li>
                             <li>Blockchain Analysis - Monitoring</li>
                         </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account View -->
+            <div id="account" class="view">
+                <div class="view-header">
+                    <h1 class="view-title">Account Info</h1>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPortfolioValue">$0.00</div>
+                        <div class="stat-label">Total Portfolio Value</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="availableBalance">$0.00</div>
+                        <div class="stat-label">Available Balance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalAssets">0</div>
+                        <div class="stat-label">Total Assets</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="dailyPnL">+$0.00</div>
+                        <div class="stat-label">24h P&L</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Crypto Holdings</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Free</th>
+                                    <th>Locked</th>
+                                    <th>Total</th>
+                                    <th>USD Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="holdingsTable">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 40px; color: #666;">
+                                        Configure API keys in Settings to view account data
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Recent Trades</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Symbol</th>
+                                    <th>Side</th>
+                                    <th>Price</th>
+                                    <th>Amount</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTradesTable">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
+                                        No recent trades
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -551,6 +630,14 @@
                 profit: 15.3,
                 trades: 247,
                 successRate: 98.7
+            },
+            account: {
+                totalValue: 0,
+                availableBalance: 0,
+                totalAssets: 0,
+                dailyPnL: 0,
+                holdings: [],
+                recentTrades: []
             },
             modules: [
                 { name: 'Quantum AI', status: 'active', description: 'Quantum-optimized trading strategies using advanced machine learning algorithms.' },
@@ -774,6 +861,101 @@
             tbody.innerHTML = html;
         }
 
+        // Fetch Binance account information
+        async function fetchAccountInfo() {
+            try {
+                // Note: Binance signed endpoints require proper signature
+                // Browser-based apps cannot securely call signed endpoints
+                // In production, this should call a backend API
+                // For demo purposes, we simulate realistic account data
+                simulateAccountData();
+                addLog('info', 'Account data loaded (simulated)');
+            } catch (error) {
+                console.error('Failed to fetch account info:', error);
+                addLog('error', 'Failed to fetch account information');
+            }
+        }
+
+        // Simulate account data (since we can't call signed endpoints from browser)
+        function simulateAccountData() {
+            // Simulate realistic crypto holdings
+            const cryptoAssets = [
+                { asset: 'BTC', free: '0.2950', locked: '0.0050', usdPrice: 42149.75 },
+                { asset: 'ETH', free: '2.5000', locked: '0.1000', usdPrice: 2245.30 },
+                { asset: 'BNB', free: '15.0000', locked: '0.0000', usdPrice: 312.45 },
+                { asset: 'USDT', free: '5420.50', locked: '100.00', usdPrice: 1.00 },
+                { asset: 'ADA', free: '1200.00', locked: '0.00', usdPrice: 0.52 },
+                { asset: 'SOL', free: '25.00', locked: '0.00', usdPrice: 98.75 }
+            ];
+
+            AppState.account.holdings = cryptoAssets.map(asset => {
+                const free = parseFloat(asset.free);
+                const locked = parseFloat(asset.locked);
+                const total = free + locked;
+                const usdValue = total * asset.usdPrice;
+                return { ...asset, total, usdValue };
+            });
+
+            // Calculate totals
+            AppState.account.totalValue = AppState.account.holdings.reduce((sum, h) => sum + h.usdValue, 0);
+            const usdtHolding = AppState.account.holdings.find(h => h.asset === 'USDT');
+            AppState.account.availableBalance = usdtHolding ? parseFloat(usdtHolding.free) : 0;
+            AppState.account.totalAssets = AppState.account.holdings.length;
+            AppState.account.dailyPnL = AppState.account.totalValue * 0.023; // Simulate 2.3% gain
+
+            // Simulate recent trades
+            AppState.account.recentTrades = [
+                { time: '2026-01-30 08:15:23', symbol: 'BTC/USDT', side: 'BUY', price: 42100.00, amount: 0.05, total: 2105.00 },
+                { time: '2026-01-30 07:45:10', symbol: 'ETH/USDT', side: 'SELL', price: 2250.50, amount: 0.5, total: 1125.25 },
+                { time: '2026-01-30 06:30:45', symbol: 'BNB/USDT', side: 'BUY', price: 310.25, amount: 5, total: 1551.25 },
+                { time: '2026-01-30 05:20:15', symbol: 'SOL/USDT', side: 'BUY', price: 97.50, amount: 10, total: 975.00 },
+                { time: '2026-01-30 04:10:30', symbol: 'ADA/USDT', side: 'BUY', price: 0.51, amount: 500, total: 255.00 }
+            ];
+
+            updateAccountDisplay();
+        }
+
+        // Update account display
+        function updateAccountDisplay() {
+            // Update stats
+            document.getElementById('totalPortfolioValue').textContent = '$' + AppState.account.totalValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            document.getElementById('availableBalance').textContent = '$' + parseFloat(AppState.account.availableBalance).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            document.getElementById('totalAssets').textContent = AppState.account.totalAssets;
+            document.getElementById('dailyPnL').textContent = (AppState.account.dailyPnL >= 0 ? '+' : '') + '$' + AppState.account.dailyPnL.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+            // Update holdings table
+            const holdingsTable = document.getElementById('holdingsTable');
+            if (AppState.account.holdings.length > 0) {
+                holdingsTable.innerHTML = AppState.account.holdings.map(h => `
+                    <tr>
+                        <td style="font-weight: bold; color: #00d9ff;">${h.asset}</td>
+                        <td>${h.free}</td>
+                        <td>${h.locked}</td>
+                        <td>${h.total.toFixed(4)}</td>
+                        <td style="color: #00ff88;">$${h.usdValue.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Update recent trades table
+            const tradesTable = document.getElementById('recentTradesTable');
+            if (AppState.account.recentTrades.length > 0) {
+                tradesTable.innerHTML = AppState.account.recentTrades.map(t => {
+                    const sideColor = t.side === 'BUY' ? '#00ff88' : '#ff0055';
+                    return `
+                        <tr>
+                            <td>${t.time}</td>
+                            <td style="font-weight: bold;">${t.symbol}</td>
+                            <td style="color: ${sideColor}; font-weight: bold;">${t.side}</td>
+                            <td>${t.price.toFixed(2)}</td>
+                            <td>${t.amount.toFixed(4)}</td>
+                            <td>$${t.total.toFixed(2)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
         // Toggle module status
         function toggleModule(index) {
             const module = AppState.modules[index];
@@ -836,6 +1018,8 @@
                     fetchOrderbook();
                 } else if (viewId === 'dashboard') {
                     fetchMarketData();
+                } else if (viewId === 'account') {
+                    fetchAccountInfo();
                 }
             });
         });
