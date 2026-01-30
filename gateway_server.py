@@ -14,6 +14,11 @@ import json
 import sqlite3
 from contextlib import contextmanager
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -22,10 +27,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware
+# CORS middleware - SECURITY WARNING: Restrict origins in production!
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # TODO: Change to specific origins in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -511,7 +516,7 @@ async def pause_bot():
 
 @app.post("/bot/stop")
 async def stop_bot():
-    """Stop the bot"""
+    """Stop the bot (sets to PAUSE state)"""
     state_manager.bot_state = BotState.PAUSE
     
     await manager.broadcast({
@@ -519,7 +524,7 @@ async def stop_bot():
         "state": "PAUSE"
     })
     
-    return {"status": "success", "message": "Bot stopped"}
+    return {"status": "success", "message": "Bot stopped (paused)"}
 
 @app.post("/config/update")
 async def update_config(config: ConfigUpdate):
@@ -540,7 +545,7 @@ async def execute_quick_trade(request: QuickTradeRequest):
     
     await manager.broadcast({
         "type": "position_opened",
-        "position": position.dict()
+        "position": position.model_dump()
     })
     
     return position
@@ -574,13 +579,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 status = state_manager.get_status()
                 await websocket.send_json({
                     "type": "status_update",
-                    "data": status.dict()
+                    "data": status.model_dump()
                 })
                 await asyncio.sleep(5)  # Update every 5 seconds
             except WebSocketDisconnect:
                 break
-    except Exception as e:
-        print(f"WebSocket error: {e}")
+            except Exception as e:
+                logger.error(f"WebSocket error: {e}")
+                break
     finally:
         manager.disconnect(websocket)
 

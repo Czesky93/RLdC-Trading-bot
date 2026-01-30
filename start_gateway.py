@@ -56,7 +56,7 @@ Examples:
         "--workers",
         type=int,
         default=1,
-        help="Number of worker processes (production only, default: 1)"
+        help="Number of worker processes (WARNING: State not shared across workers, use 1 for now)"
     )
     
     parser.add_argument(
@@ -81,6 +81,8 @@ Examples:
     print(f"Host: {args.host}")
     print(f"Port: {args.port}")
     print(f"Workers: {args.workers}")
+    if args.workers > 1:
+        print(f"⚠️  WARNING: Multiple workers don't share state. Use workers=1 for now.")
     print(f"Reload: {args.reload}")
     print(f"Log Level: {args.log_level}")
     print()

@@ -170,11 +170,14 @@ asyncio.run(connect())
 
 ## State Management
 
-The server uses a hybrid approach:
-- **In-memory**: Fast access to current state
-- **SQLite**: Persistent storage for positions, trades, equity history, and configuration
+The server uses primarily in-memory state management for fast access:
+- **In-memory**: Fast access to current state (positions, trades, equity, config)
+- **SQLite**: Database schema prepared for future persistence implementation
 
-Database file: `trading_bot.db` (created automatically)
+**Note**: Current implementation stores all data in memory. Data will be lost on server restart.
+Database persistence is planned for future releases.
+
+Database file: `trading_bot.db` (schema created automatically)
 
 ## Configuration
 
@@ -207,10 +210,20 @@ gunicorn gateway_server:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0
 
 ## Security Notes
 
-- The server currently has CORS enabled for all origins (development mode)
-- For production, restrict CORS origins in the middleware configuration
-- Consider adding authentication middleware for production use
-- Use HTTPS in production environments
+⚠️ **IMPORTANT SECURITY WARNINGS**:
+- The server currently has NO authentication/authorization
+- CORS is enabled for all origins (development mode)
+- All API endpoints are publicly accessible
+
+**For Production Use**:
+1. Implement authentication middleware (JWT, OAuth2, API keys)
+2. Restrict CORS origins in the middleware configuration
+3. Use HTTPS/TLS in production environments
+4. Consider IP whitelisting for API access
+5. Add rate limiting to prevent abuse
+6. Never expose this API directly to the internet without proper security
+
+**Recommended**: Run behind a reverse proxy (nginx, Caddy) with authentication.
 
 ## License
 
