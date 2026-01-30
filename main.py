@@ -6,6 +6,7 @@ Provides REST API and WebSocket endpoints for trading bot management
 import asyncio
 import json
 import os
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
@@ -14,6 +15,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
 from contextlib import contextmanager
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 # Database configuration
@@ -199,13 +207,14 @@ async def lifespan(app: FastAPI):
     # Start background task for market data updates
     task = asyncio.create_task(market_data_updater())
     
-    print("✅ RLdC Trading Bot API started successfully")
-    print("📡 WebSocket endpoint available at: ws://0.0.0.0:8000/ws")
-    print("📊 API documentation available at: http://0.0.0.0:8000/docs")
+    logger.info("✅ RLdC Trading Bot API started successfully")
+    logger.info("📡 WebSocket endpoint available at: ws://0.0.0.0:8000/ws")
+    logger.info("📊 API documentation available at: http://0.0.0.0:8000/docs")
     
     yield
     
     # Shutdown
+    logger.info("Shutting down RLdC Trading Bot API...")
     task.cancel()
     try:
         await task
@@ -217,6 +226,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="RLdC Trading Bot API", version="1.0.0", lifespan=lifespan)
 
 # Add CORS middleware
+# NOTE: Currently configured for development with allow_origins=["*"].
+# For production, replace with specific origins list and consider removing allow_credentials
+# or set allow_origins to specific domains instead of wildcard.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -233,7 +245,11 @@ async def broadcast_to_websockets(message: dict):
     for client in websocket_clients:
         try:
             await client.send_json(message)
-        except:
+        except WebSocketDisconnect:
+            logger.info("Client disconnected during broadcast")
+            disconnected.append(client)
+        except Exception as e:
+            logger.error(f"Error broadcasting to client: {e}")
             disconnected.append(client)
     
     # Remove disconnected clients
@@ -449,24 +465,25 @@ async def modify_position(position_id: int, request: ModifyPositionRequest):
         if not row:
             raise HTTPException(status_code=404, detail="Position not found")
         
-        # Update SL/TP
-        updates = []
-        params = []
-        
-        if request.sl is not None:
-            updates.append("sl = ?")
-            params.append(request.sl)
-        
-        if request.tp is not None:
-            updates.append("tp = ?")
-            params.append(request.tp)
-        
-        if updates:
-            updates.append("updated_at = CURRENT_TIMESTAMP")
-            params.append(position_id)
-            
-            query = f"UPDATE positions SET {', '.join(updates)} WHERE id = ?"
-            cursor.execute(query, params)
+        # Update SL/TP using parameterized queries
+        if request.sl is not None and request.tp is not None:
+            cursor.execute("""
+                UPDATE positions 
+                SET sl = ?, tp = ?, updated_at = CURRENT_TIMESTAMP 
+                WHERE id = ?
+            """, (request.sl, request.tp, position_id))
+        elif request.sl is not None:
+            cursor.execute("""
+                UPDATE positions 
+                SET sl = ?, updated_at = CURRENT_TIMESTAMP 
+                WHERE id = ?
+            """, (request.sl, position_id))
+        elif request.tp is not None:
+            cursor.execute("""
+                UPDATE positions 
+                SET tp = ?, updated_at = CURRENT_TIMESTAMP 
+                WHERE id = ?
+            """, (request.tp, position_id))
     
     # Broadcast update
     await broadcast_to_websockets({
@@ -507,17 +524,16 @@ async def get_trades_history(limit: int = Query(100, ge=1, le=1000)):
 
 
 @app.get("/equity")
-async def get_equity(range: str = Query("1D", pattern="^(1H|4H|1D|1W|1M)$")):
+async def get_equity(time_range: str = Query("1D", pattern="^(1H|4H|1D|1W|1M)$")):
     """Get equity data for specified time range"""
-    equity_points = get_equity_data_from_db(range)
+    equity_points = get_equity_data_from_db(time_range)
     
     # If no data, create some sample data
     if not equity_points:
         # Add some mock equity data
-        from builtins import range as range_func
         now = datetime.now()
         equity_points = []
-        for i in range_func(20):
+        for i in range(20):
             equity_points.append({
                 "timestamp": (now - timedelta(hours=i)).isoformat(),
                 "equity": 10000 + (i * 50),
@@ -527,7 +543,7 @@ async def get_equity(range: str = Query("1D", pattern="^(1H|4H|1D|1W|1M)$")):
         equity_points.reverse()
     
     return {
-        "range": range,
+        "range": time_range,
         "data": equity_points,
         "total_points": len(equity_points)
     }
@@ -583,16 +599,31 @@ async def stop_bot():
 @app.post("/config/update")
 async def update_config(request: ConfigUpdateRequest):
     """Update bot configuration"""
+    # Validate configuration
+    config = request.config
+    
+    # Basic validation
+    if "max_positions" in config and not isinstance(config["max_positions"], (int, float)):
+        raise HTTPException(status_code=400, detail="max_positions must be a number")
+    if "default_leverage" in config and not (1 <= config.get("default_leverage", 1) <= 125):
+        raise HTTPException(status_code=400, detail="default_leverage must be between 1 and 125")
+    if "risk_per_trade" in config and not (0 < config.get("risk_per_trade", 1) <= 100):
+        raise HTTPException(status_code=400, detail="risk_per_trade must be between 0 and 100")
+    
     # Save config to file
     config_file = "bot_config.json"
     
-    with open(config_file, "w") as f:
-        json.dump(request.config, f, indent=2)
+    try:
+        with open(config_file, "w") as f:
+            json.dump(config, f, indent=2)
+    except Exception as e:
+        logger.error(f"Failed to save configuration: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save configuration")
     
     # Broadcast update
     await broadcast_to_websockets({
         "type": "config_updated",
-        "config": request.config
+        "config": config
     })
     
     return {
@@ -605,6 +636,14 @@ async def update_config(request: ConfigUpdateRequest):
 async def quick_trade(request: QuickTradeRequest):
     """Execute a quick trade"""
     try:
+        # Validate input
+        if request.leverage < 1 or request.leverage > 125:
+            raise HTTPException(status_code=400, detail="Leverage must be between 1 and 125")
+        if request.amount <= 0:
+            raise HTTPException(status_code=400, detail="Amount must be positive")
+        if request.side.upper() not in ["LONG", "SHORT", "BUY", "SELL"]:
+            raise HTTPException(status_code=400, detail="Side must be LONG, SHORT, BUY, or SELL")
+        
         # Get current price
         entry_price = await binance_client.get_price(request.symbol)
         
@@ -662,8 +701,11 @@ async def quick_trade(request: QuickTradeRequest):
             "status": "filled"
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error executing quick trade: {e}")
+        raise HTTPException(status_code=500, detail="Failed to execute trade")
 
 
 # WebSocket endpoint
@@ -692,9 +734,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     "timestamp": datetime.now().isoformat()
                 })
             except WebSocketDisconnect:
+                logger.info("WebSocket client disconnected")
                 break
             except Exception as e:
-                print(f"WebSocket error: {e}")
+                logger.error(f"WebSocket error: {e}")
                 break
                 
     finally:
