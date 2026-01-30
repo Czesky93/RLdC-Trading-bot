@@ -5,16 +5,24 @@ Główna bramka API do zarządzania botem tradingowym z integracją Binance Futu
 
 from fastapi import FastAPI, WebSocket, HTTPException, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 import asyncio
 import json
 import random
+import logging
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 import os
 from config_manager import load_config
+
+# Konfiguracja logowania
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Inicjalizacja FastAPI
 app = FastAPI(
@@ -35,7 +43,9 @@ app.add_middleware(
 # Wczytanie konfiguracji
 try:
     config = load_config()
-except Exception:
+    logger.info("Konfiguracja załadowana pomyślnie")
+except Exception as e:
+    logger.warning(f"Nie można załadować konfiguracji: {e}. Używam wartości domyślnych.")
     config = {
         "BINANCE_API_KEY": "",
         "BINANCE_API_SECRET": "",
@@ -149,7 +159,7 @@ state = TradingState()
 
 # Modele Pydantic dla walidacji danych wejściowych
 class ClosePositionRequest(BaseModel):
-    percent: int = 100
+    percent: int = Field(default=100, ge=1, le=100, description="Procent pozycji do zamknięcia (1-100)")
 
 class ModifyPositionRequest(BaseModel):
     sl: Optional[float] = None
@@ -158,10 +168,10 @@ class ModifyPositionRequest(BaseModel):
 class QuickTradeRequest(BaseModel):
     symbol: str
     side: str  # LONG lub SHORT
-    amount: float
-    leverage: int = 1
-    sl_percent: Optional[float] = None
-    tp_percent: Optional[float] = None
+    amount: float = Field(gt=0, description="Ilość do handlu (musi być > 0)")
+    leverage: int = Field(default=1, ge=1, le=125, description="Dźwignia (1-125)")
+    sl_percent: Optional[float] = Field(default=None, ge=0, le=100)
+    tp_percent: Optional[float] = Field(default=None, ge=0, le=100)
 
 class ConfigUpdateRequest(BaseModel):
     updates: Dict[str, Any]
@@ -192,8 +202,11 @@ def get_binance_price(symbol: str) -> Optional[float]:
         binance_symbol = symbol.replace("/", "")
         ticker = binance_client.get_symbol_ticker(symbol=binance_symbol)
         return float(ticker['price'])
-    except (BinanceAPIException, Exception) as e:
-        print(f"⚠️ Błąd pobierania ceny dla {symbol}: {e}")
+    except BinanceAPIException as e:
+        print(f"⚠️ Błąd Binance API dla {symbol}: {e}")
+        return None
+    except Exception as e:
+        print(f"⚠️ Nieoczekiwany błąd pobierania ceny dla {symbol}: {e}")
         return None
 
 def update_positions_prices():
@@ -314,6 +327,15 @@ async def close_position(position_id: int, request: ClosePositionRequest):
         # Aktualizuj pozycję
         position["amount"] = remaining_amount
         state.current_balance += partial_pnl
+        
+        # Powiadomienie WebSocket o częściowym zamknięciu
+        await broadcast_websocket({
+            "type": "position_partially_closed",
+            "position_id": position_id,
+            "percent": request.percent,
+            "pnl": round(partial_pnl, 2),
+            "remaining_amount": remaining_amount
+        })
         
         return {
             "status": "success",
@@ -577,8 +599,9 @@ async def websocket_endpoint(websocket: WebSocket):
     
     except WebSocketDisconnect:
         state.websocket_connections.remove(websocket)
+        logger.info("Klient WebSocket rozłączony")
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        logger.exception(f"Błąd WebSocket: {e}")
         if websocket in state.websocket_connections:
             state.websocket_connections.remove(websocket)
 

@@ -18,6 +18,24 @@ fi
 # Sprawdź czy uvicorn jest zainstalowany
 if ! python3 -c "import uvicorn" 2>/dev/null; then
     echo "⚠️  Uvicorn nie jest zainstalowany!"
+    
+    # Sprawdź czy jesteśmy w virtualenv
+    if [ -z "$VIRTUAL_ENV" ]; then
+        echo ""
+        echo "⚠️  UWAGA: Nie wykryto środowiska wirtualnego!"
+        echo "Zalecane jest użycie virtualenv:"
+        echo ""
+        echo "  python3 -m venv .venv"
+        echo "  source .venv/bin/activate"
+        echo "  pip install -r requirements.txt"
+        echo ""
+        read -p "Kontynuować bez virtualenv? (t/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Tt]$ ]]; then
+            exit 1
+        fi
+    fi
+    
     echo "Instaluję zależności..."
     pip install -r requirements.txt
 fi
