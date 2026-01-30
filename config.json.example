@@ -1,0 +1,16 @@
+{
+  "BINANCE_API_KEY": "your_binance_api_key_here",
+  "BINANCE_API_SECRET": "your_binance_api_secret_here",
+  "trading": {
+    "max_positions": 5,
+    "max_leverage": 20,
+    "default_leverage": 10,
+    "risk_per_trade": 2.0,
+    "take_profit_percent": 4.0,
+    "stop_loss_percent": 2.0
+  },
+  "symbols": [
+    "BTC/USDT",
+    "ETH/USDT"
+  ]
+}
