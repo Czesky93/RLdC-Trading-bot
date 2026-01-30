@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RLdC Portal - AI Trading Bot Management Interface">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>RLdC Portal</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 250px;
+            background: rgba(26, 26, 46, 0.95);
+            padding: 20px 0;
+            border-right: 2px solid #0f3460;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            text-align: center;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d9ff;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+            margin-bottom: 30px;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-left-color: #00d9ff;
+        }
+
+        .nav-item.active {
+            background: rgba(0, 217, 255, 0.2);
+            border-left-color: #00d9ff;
+            color: #00d9ff;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .view-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0f3460;
+        }
+
+        .view-title {
+            font-size: 32px;
+            color: #00d9ff;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(22, 33, 62, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #0f3460;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 217, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #00d9ff;
+            font-weight: 600;
+        }
+
+        .card-content {
+            color: #b8b8b8;
+            line-height: 1.6;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #00d9ff;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #b8b8b8;
+            text-transform: uppercase;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(22, 33, 62, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        th {
+            background: rgba(15, 52, 96, 0.8);
+            color: #00d9ff;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        /* Logs */
+        .log-container {
+            background: #0a0a0a;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #0f3460;
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #1a1a2e;
+        }
+
+        .log-time {
+            color: #00d9ff;
+        }
+
+        .log-level {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin: 0 10px;
+        }
+
+        .log-info { background: #0f3460; color: #00d9ff; }
+        .log-warning { background: #ff9900; color: #1a1a2e; }
+        .log-error { background: #ff0055; color: #fff; }
+        .log-success { background: #00ff88; color: #1a1a2e; }
+
+        /* Module Cards */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .module-card {
+            background: rgba(22, 33, 62, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #0f3460;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .module-name {
+            font-size: 18px;
+            color: #00d9ff;
+            font-weight: 600;
+        }
+
+        .module-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .status-active {
+            background: #00ff88;
+            color: #1a1a2e;
+        }
+
+        .status-inactive {
+            background: #666;
+            color: #fff;
+        }
+
+        /* Settings Form */
+        .settings-section {
+            margin-bottom: 30px;
+        }
+
+        .settings-section h3 {
+            color: #00d9ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b8b8b8;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 52, 96, 0.3);
+            border: 1px solid #0f3460;
+            border-radius: 5px;
+            color: #e8e8e8;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #00d9ff 0%, #0080ff 100%);
+            border: none;
+            border-radius: 5px;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid #0f3460;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">🚀 RLdC Portal</div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-view="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-view="orderbook">
+                    <span class="nav-icon">📈</span>
+                    <span>Orderbook</span>
+                </li>
+                <li class="nav-item" data-view="logs">
+                    <span class="nav-icon">📝</span>
+                    <span>Logs</span>
+                </li>
+                <li class="nav-item" data-view="modules">
+                    <span class="nav-icon">🔧</span>
+                    <span>Modules</span>
+                </li>
+                <li class="nav-item" data-view="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div id="dashboard" class="view active">
+                <div class="view-header">
+                    <h1 class="view-title">Dashboard</h1>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">$12,450</div>
+                        <div class="stat-label">Total Balance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">+15.3%</div>
+                        <div class="stat-label">24h Profit</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">247</div>
+                        <div class="stat-label">Active Trades</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">98.7%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Trading Performance</h3>
+                    <div class="card-content">
+                        <p>AI models are actively analyzing market conditions and executing trades based on quantum-optimized strategies.</p>
+                        <p style="margin-top: 10px;">Current market sentiment: <strong style="color: #00ff88;">Bullish</strong></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Active Strategies</h3>
+                    <div class="card-content">
+                        <ul style="list-style-position: inside;">
+                            <li>Quantum AI Trading - Active</li>
+                            <li>Deep RL Optimization - Active</li>
+                            <li>High-Frequency Trading - Active</li>
+                            <li>Blockchain Analysis - Monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orderbook View -->
+            <div id="orderbook" class="view">
+                <div class="view-header">
+                    <h1 class="view-title">Orderbook</h1>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">BTC/USDT Market Depth</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Price (USDT)</th>
+                                    <th>Amount (BTC)</th>
+                                    <th>Total (USDT)</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="color: #ff0055;">42,150.50</td>
+                                    <td>0.5234</td>
+                                    <td>22,061.23</td>
+                                    <td style="color: #ff0055;">SELL</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #ff0055;">42,151.00</td>
+                                    <td>1.2340</td>
+                                    <td>52,014.33</td>
+                                    <td style="color: #ff0055;">SELL</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #ff0055;">42,152.25</td>
+                                    <td>0.8765</td>
+                                    <td>36,945.45</td>
+                                    <td style="color: #ff0055;">SELL</td>
+                                </tr>
+                                <tr style="background: rgba(0, 217, 255, 0.1);">
+                                    <td style="color: #00d9ff; font-weight: bold;">42,149.75</td>
+                                    <td colspan="3">CURRENT PRICE</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #00ff88;">42,148.50</td>
+                                    <td>0.9876</td>
+                                    <td>41,628.22</td>
+                                    <td style="color: #00ff88;">BUY</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #00ff88;">42,147.25</td>
+                                    <td>1.5432</td>
+                                    <td>65,038.45</td>
+                                    <td style="color: #00ff88;">BUY</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #00ff88;">42,146.00</td>
+                                    <td>2.1234</td>
+                                    <td>89,468.36</td>
+                                    <td style="color: #00ff88;">BUY</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs View -->
+            <div id="logs" class="view">
+                <div class="view-header">
+                    <h1 class="view-title">System Logs</h1>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Real-time Activity Log</h3>
+                    <div class="log-container">
+                        <div class="log-entry">
+                            <span class="log-time">[2026-01-30 08:03:04]</span>
+                            <span class="log-level log-info">INFO</span>
+                            <span>Quantum AI model initialized successfully</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">[2026-01-30 08:03:05]</span>
+                            <span class="log-level log-success">SUCCESS</span>
+                            <span>Connected to Binance WebSocket</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">[2026-01-30 08:03:07]</span>
+                            <span class="log-level log-info">INFO</span>
+                            <span>Market analysis started for BTC/USDT</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">[2026-01-30 08:03:12]</span>
+                            <span class="log-level log-success">SUCCESS</span>
+                            <span>Trade executed: BUY 0.5 BTC @ 42,149.75</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">[2026-01-30 08:03:15]</span>
+                            <span class="log-level log-info">INFO</span>
+                            <span>Deep RL model training iteration completed</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">[2026-01-30 08:03:18]</span>
+                            <span class="log-level log-warning">WARNING</span>
+                            <span>High volatility detected in ETH/USDT pair</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">[2026-01-30 08:03:22]</span>
+                            <span class="log-level log-info">INFO</span>
+                            <span>Portfolio rebalancing initiated</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">[2026-01-30 08:03:25]</span>
+                            <span class="log-level log-success">SUCCESS</span>
+                            <span>Risk management rules updated</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modules View -->
+            <div id="modules" class="view">
+                <div class="view-header">
+                    <h1 class="view-title">Trading Modules</h1>
+                </div>
+
+                <div class="modules-grid">
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-name">Quantum AI</div>
+                            <span class="module-status status-active">Active</span>
+                        </div>
+                        <div class="card-content">
+                            <p>Quantum-optimized trading strategies using advanced machine learning algorithms.</p>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-name">Deep RL Trader</div>
+                            <span class="module-status status-active">Active</span>
+                        </div>
+                        <div class="card-content">
+                            <p>Deep Reinforcement Learning model for autonomous trading decisions.</p>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-name">HFT Engine</div>
+                            <span class="module-status status-active">Active</span>
+                        </div>
+                        <div class="card-content">
+                            <p>High-Frequency Trading engine for ultra-fast order execution.</p>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-name">Blockchain Analyzer</div>
+                            <span class="module-status status-active">Active</span>
+                        </div>
+                        <div class="card-content">
+                            <p>Real-time blockchain analysis and anomaly detection system.</p>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-name">Risk Manager</div>
+                            <span class="module-status status-active">Active</span>
+                        </div>
+                        <div class="card-content">
+                            <p>Advanced risk management and portfolio protection mechanisms.</p>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-name">News Watcher</div>
+                            <span class="module-status status-inactive">Inactive</span>
+                        </div>
+                        <div class="card-content">
+                            <p>Sentiment analysis from news sources and social media feeds.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settings" class="view">
+                <div class="view-header">
+                    <h1 class="view-title">Settings</h1>
+                </div>
+
+                <div class="card">
+                    <div class="settings-section">
+                        <h3>API Configuration</h3>
+                        <div class="form-group">
+                            <label class="form-label">API Key</label>
+                            <input type="text" class="form-input" placeholder="Enter your API key">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">API Secret</label>
+                            <input type="password" class="form-input" placeholder="Enter your API secret">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Trading Parameters</h3>
+                        <div class="form-group">
+                            <label class="form-label">Maximum Trade Size (BTC)</label>
+                            <input type="number" class="form-input" value="0.5" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Stop Loss (%)</label>
+                            <input type="number" class="form-input" value="2.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Take Profit (%)</label>
+                            <input type="number" class="form-input" value="5.0" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>AI Model Settings</h3>
+                        <div class="form-group">
+                            <label class="form-label">Learning Rate</label>
+                            <input type="number" class="form-input" value="0.001" step="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Training Iterations</label>
+                            <input type="number" class="form-input" value="1000" step="100">
+                        </div>
+                    </div>
+
+                    <button class="btn">Save Settings</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Navigation handling
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all nav items and views
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+                
+                // Add active class to clicked item and corresponding view
+                this.classList.add('active');
+                const viewId = this.getAttribute('data-view');
+                document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('PWA install prompt available');
+        });
+    </script>
+</body>
+</html>
